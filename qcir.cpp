@@ -63,8 +63,6 @@ int main(int argc, char *argv[]) {
         std::cout << "Correct cleansed: " << (parser->correct_cleansed ? "true" : "false" ) << std::endl;
     }
     std::cout << "Time of execution: " << difftime(end, start) << "s" << std::endl;
-   
-    delete filename;
 
     return check_for_cleansed ? (parser->errors->count == 0 && parser->correct_cleansed ? EXIT_SUCCESS : EXIT_FAILURE) : (parser->errors->count == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
