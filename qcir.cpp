@@ -5,13 +5,11 @@
 #include "Parser.h"
 #include "Scanner.h"
 #include "ParserLight.h"
-#include "ParserLight.h"
-
 
 int main(int argc, char *argv[]) {
 
     if (argc < 2) {
-        cerr << "Usage: qcir <filename> [-cleansed] [-light" << endl;
+        cerr << "Usage: qcir <filename> [-cleansed] [-light]" << endl;
         return EXIT_FAILURE;
     }
 
