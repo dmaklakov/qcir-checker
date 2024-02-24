@@ -38,3 +38,7 @@ OLD/
 QCIR/
 Taste/
 Coco/
+
+# Build Directory
+build/
+build-*/
