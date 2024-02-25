@@ -12,9 +12,9 @@ using namespace std;
 class ParserLight : public Parser {
 
 public:
-	unordered_set<const wchar_t*, WCharPtrHash, WCharPtrEqual> unresolved_variables;
+	unordered_set<size_t> unresolved_variables;
 
-	unordered_set<const wchar_t*, WCharPtrHash, WCharPtrEqual> gate_variables_set;
+	unordered_set<size_t> gate_variables_set;
 
 	ParserLight(Scanner *scanner, bool check_for_cleansed);
 	~ParserLight();

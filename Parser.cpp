@@ -82,17 +82,23 @@ void Parser::Qcir_file_mod() {
 			}
 		}
 
-		if (global_variables.count(output_gate) > 0) {
-			SemErr(output_gate, L"is not a gate variable");
-			correct_cleansed = false;
-		} else if (gate_variables.count(output_gate) == 0) {
+		const size_t output_gate_symbol = symbols[output_gate];
+		if (gate_variables.count(output_gate_symbol) == 0) {
 			SemErr(output_gate, L"output gate was not defined");
 			correct_cleansed = false;
-		} else {
-			Gate output = gate_variables[output_gate];
+		} else if (global_variables.count(output_gate_symbol) > 0) {
+			SemErr(output_gate, L"is not a gate variable");
+			correct_cleansed = false;
+		}  else {
+			Gate output = gate_variables[output_gate_symbol];
 			if (!output.unresolved_variables.empty()) {
-				for (auto unresolved_variable : output.unresolved_variables) {
-					SemErr(unresolved_variable, L" was unresolved");
+				for (const auto unresolved_variable : output.unresolved_variables) {
+					for(const auto pair : symbols) {
+						if (pair.second == unresolved_variable) {
+							SemErr(pair.first, L" was unresolved");
+							break;
+						}
+					}
 				}
 				correct_cleansed = false;
 			}
@@ -137,10 +143,11 @@ void Parser::Qblock_stmt() {
 			Free();
 			Expect(4 /* "(" */);
 			Var();
-			
-			Warning(wcsdup(t->val), L"is a free variable");
-			if (global_variables.count(t->val) == 0) {
-				global_variables.insert(wcsdup(t->val));
+			wchar_t* var = wcsdup(t->val);
+			size_t var_symbol = symbols[var];
+			Warning(var, L"is a free variable");
+			if (global_variables.count(var_symbol) == 0) {
+				global_variables.insert(var_symbol);
 			} else if (check_for_cleansed) {
 				SemErr(t->val, L"was already defined");
 				correct_cleansed = false;
@@ -149,10 +156,11 @@ void Parser::Qblock_stmt() {
 			while (la->kind == 5 /* "," */) {
 				Get();
 				Var();
-				
-				Warning(wcsdup(t->val), L"is a free variable");
-				if (global_variables.count(t->val) == 0) {
-					global_variables.insert(wcsdup(t->val));
+				var = wcsdup(t->val);
+				size_t var_symbol = symbols[var];
+				Warning(var, L"is a free variable");
+				if (global_variables.count(var_symbol) == 0) {
+					global_variables.insert(var_symbol);
 				} else if (check_for_cleansed) {
 					SemErr(t->val, L"was already defined");
 					correct_cleansed = false;
@@ -184,18 +192,18 @@ void Parser::Output_stmt() {
 
 void Parser::Gate_stmt() {
 	while (!(la->kind == _EOF || la->kind == _ident || la->kind == _number_ident)) {SynErr(251); Get();}
-	
+
 	Var();
 	Gate* gate = new Gate();
-	gate->type = NO_QUANTIFIERS;
-	gate->unresolved_variables = unordered_set<const wchar_t*, WCharPtrHash, WCharPtrEqual>();
 	const wchar_t *name = wcsdup(t->val);
-	if (global_variables.count(name) > 0 || gate_variables.count(name) > 0 || resolved_variables.count(name) > 0) {
+	size_t name_symbol = symbols[name];
+	if (global_variables.count(name_symbol) > 0 || gate_variables.count(name_symbol) > 0 || resolved_variables.count(name_symbol) > 0) {
 		SemErr(name, L"was already defined");
 		correct_cleansed = false;
 	}
 
-    wchar_t *var;
+	wchar_t *var;
+	size_t var_symbol;
 	Expect(7 /* "=" */);
 	if (StartOf(5)) {
 		Ngate_type();
@@ -203,8 +211,9 @@ void Parser::Gate_stmt() {
 		if (la->kind == _ident || la->kind == _number_ident || la->kind == 9 /* "-" */) {
 			Lit();
 			var = wcsdup(t->val);
-			if (gate_variables.count(var) > 0) {
-				Gate *gate_var = &gate_variables.at(var);
+			var_symbol = symbols[var];
+			if (gate_variables.count(var_symbol) > 0) {
+				Gate *gate_var = &gate_variables.at(var_symbol);
 				for (const auto& elem: gate_var->unresolved_variables) {
 					gate->unresolved_variables.insert(elem);
 				}
@@ -218,17 +227,17 @@ void Parser::Gate_stmt() {
 					}
 					gate->type = EXIST_QUANTIFIERS;
 				}
-			} else if (global_variables.count(var) == 0) {
-				gate->unresolved_variables.insert(var);
+			} else if (global_variables.count(var_symbol) == 0) {
+				gate->unresolved_variables.insert(var_symbol);
 			}
 
 			while (la->kind == 5 /* "," */) {
 				Get();
 				Lit();
 				var = wcsdup(t->val);
-				if (gate_variables.count(var) > 0) {
-					Gate *gate_var = &gate_variables.at(var);
-					
+				var_symbol = symbols[var];
+				if (gate_variables.count(var_symbol) > 0) {
+					Gate *gate_var = &gate_variables.at(var_symbol);
 					for (const auto& elem: gate_var->unresolved_variables) {
 						gate->unresolved_variables.insert(elem);
 					}
@@ -242,8 +251,8 @@ void Parser::Gate_stmt() {
 						}
 						gate->type = EXIST_QUANTIFIERS;
 					}
-				} else if (global_variables.count(var) == 0) {
-					gate->unresolved_variables.insert(var);
+				} else if (global_variables.count(var_symbol) == 0) {
+					gate->unresolved_variables.insert(var_symbol);
 				}
 			}
 		}
@@ -260,8 +269,9 @@ void Parser::Gate_stmt() {
 		Expect(4 /* "(" */);
 		Lit();
 		var = wcsdup(t->val);
-		if (gate_variables.count(var) > 0) {
-			Gate *gate_var = &gate_variables.at(var);
+		var_symbol = symbols[var];
+		if (gate_variables.count(var_symbol) > 0) {
+			Gate *gate_var = &gate_variables.at(var_symbol);
 			for (const auto& elem: gate_var->unresolved_variables) {
 				gate->unresolved_variables.insert(elem);
 			}
@@ -275,15 +285,16 @@ void Parser::Gate_stmt() {
 				}
 				gate->type = EXIST_QUANTIFIERS;
 			}
-		} else if (global_variables.count(var) == 0) {
-			gate->unresolved_variables.insert(var);
-		} 
+		} else if (global_variables.count(var_symbol) == 0) {
+			gate->unresolved_variables.insert(var_symbol);
+		}
 		
 		Expect(5 /* "," */);
 		Lit();
 		var = wcsdup(t->val);
-		if (gate_variables.count(var) > 0) {
-			Gate *gate_var = &gate_variables.at(var);
+		var_symbol = symbols[var];
+		if (gate_variables.count(var_symbol) > 0) {
+			Gate *gate_var = &gate_variables.at(var_symbol);
 			for (const auto& elem: gate_var->unresolved_variables) {
 				gate->unresolved_variables.insert(elem);
 			}
@@ -297,8 +308,8 @@ void Parser::Gate_stmt() {
 				}
 				gate->type = EXIST_QUANTIFIERS;
 			}
-		} else if (global_variables.count(var) == 0) {
-			gate->unresolved_variables.insert(var);
+		} else if (global_variables.count(var_symbol) == 0) {
+			gate->unresolved_variables.insert(var_symbol);
 		}
 		Expect(6 /* ")" */);
 	} else if (StartOf(7)) {
@@ -313,8 +324,9 @@ void Parser::Gate_stmt() {
 		Expect(4 /* "(" */);
 		Lit();
 		var = wcsdup(t->val);
-		if (gate_variables.count(var) > 0) {
-			Gate *gate_var = &gate_variables.at(var);
+		var_symbol = symbols[var];
+		if (gate_variables.count(var_symbol) > 0) {
+			Gate *gate_var = &gate_variables.at(var_symbol);
 			for (const auto& elem: gate_var->unresolved_variables) {
 				gate->unresolved_variables.insert(elem);
 			}
@@ -328,14 +340,16 @@ void Parser::Gate_stmt() {
 				}
 				gate->type = EXIST_QUANTIFIERS;
 			}
-		} else if (global_variables.count(var) == 0) {
-			gate->unresolved_variables.insert(var);
+		} else if (global_variables.count(var_symbol) == 0) {
+			gate->unresolved_variables.insert(var_symbol);
 		} 
 		Expect(5 /* "," */);
 		Lit();
 		var = wcsdup(t->val);
-		if (gate_variables.count(var) > 0) {
-			Gate *gate_var = &gate_variables.at(var);
+		var = wcsdup(t->val);
+		var_symbol = symbols[var];
+		if (gate_variables.count(var_symbol) > 0) {
+			Gate *gate_var = &gate_variables.at(var_symbol);
 			for (const auto& elem: gate_var->unresolved_variables) {
 				gate->unresolved_variables.insert(elem);
 			}
@@ -349,14 +363,15 @@ void Parser::Gate_stmt() {
 				}
 				gate->type = EXIST_QUANTIFIERS;
 			}
-		} else if (global_variables.count(var) == 0) {
-			gate->unresolved_variables.insert(var);
+		} else if (global_variables.count(var_symbol) == 0) {
+			gate->unresolved_variables.insert(var_symbol);
 		} 
 		Expect(5 /* "," */);
 		Lit();
 		var = wcsdup(t->val);
-		if (gate_variables.count(var) > 0) {
-			Gate *gate_var = &gate_variables.at(var);
+		var_symbol = symbols[var];
+		if (gate_variables.count(var_symbol) > 0) {
+			Gate *gate_var = &gate_variables.at(var_symbol);
 			for (const auto& elem: gate_var->unresolved_variables) {
 				gate->unresolved_variables.insert(elem);
 			}
@@ -370,8 +385,8 @@ void Parser::Gate_stmt() {
 				}
 				gate->type = EXIST_QUANTIFIERS;
 			}
-		} else if (global_variables.count(var) == 0) {
-			gate->unresolved_variables.insert(var);
+		} else if (global_variables.count(var_symbol) == 0) {
+			gate->unresolved_variables.insert(var_symbol);
 		} 
 		Expect(6 /* ")" */);
 	} else if (StartOf(3)) {
@@ -380,32 +395,35 @@ void Parser::Gate_stmt() {
 		Expect(4 /* "(" */);
 		Var();
 		var = wcsdup(t->val);
-		if (gate_variables.count(var) > 0) {
+		var_symbol = symbols[var];
+		if (gate_variables.count(var_symbol) > 0) {
 			SemErr(var, L"was already defined as gate variable");
 			correct_cleansed = false;
-		} else if (check_for_cleansed && (global_variables.count(var) > 0 || resolved_variables.count(var) > 0)) {
+		} else if (check_for_cleansed && (global_variables.count(var_symbol) > 0 || resolved_variables.count(var_symbol) > 0)) {
 			SemErr(var, L"was already defined");
 			correct_cleansed = false;
 		}
-		resolved_variables.insert(var);
+		resolved_variables.insert(var_symbol);
 		while (la->kind == 5 /* "," */) {
 			Get();
 			Var();
 			var = wcsdup(t->val);
-			if (gate_variables.count(var) > 0) {
+			var_symbol = symbols[var];
+			if (gate_variables.count(var_symbol) > 0) {
 				SemErr(var, L"was already defined as gate variable");
 				correct_cleansed = false;
-			} else if (check_for_cleansed && (resolved_variables.count(var) > 0 || global_variables.count(var) > 0)) {
+			} else if (check_for_cleansed && (resolved_variables.count(var_symbol) > 0 || global_variables.count(var_symbol) > 0)) {
 				SemErr(var, L"was already defined");
 				correct_cleansed = false;
 			}
-			resolved_variables.insert(var);
+			resolved_variables.insert(var_symbol);
 		}
 		Expect(8 /* ";" */);
 		Lit();
         var = wcsdup(t->val);
-		if (gate_variables.count(var) > 0) {
-			Gate *gate_var = &gate_variables.at(var);
+		var_symbol = symbols[var];
+		if (gate_variables.count(var_symbol) > 0) {
+			Gate *gate_var = &gate_variables.at(var_symbol);
 			if (check_for_cleansed && gate_var->type == WAS_USED) {
 				SemErr(var, L"was already used");
 				correct_cleansed = false;
@@ -414,13 +432,13 @@ void Parser::Gate_stmt() {
 			for (const auto& elem: gate_var->unresolved_variables) {
 				gate->unresolved_variables.insert(elem);
 			}
-		} else if (global_variables.count(var) == 0) {
-			gate->unresolved_variables.insert(var);
+		} else if (global_variables.count(var_symbol) == 0) {
+			gate->unresolved_variables.insert(var_symbol);
 		}
 		Expect(6 /* ")" */);
 	} else SynErr(252);
 	
-	gate_variables[name] = *gate;
+	gate_variables[name_symbol] = *gate;
 }
 
 void Parser::nl() {
@@ -464,24 +482,28 @@ void Parser::Qblock_quant() {
 	Quant();
 	Expect(4 /* "(" */);
 	Var();
+	wchar_t * var = wcsdup(t->val);
+	size_t var_symbol = symbols[var];
 	if (check_for_cleansed) {
-		if (global_variables.count(t->val) > 0) {
+		if (global_variables.count(var_symbol) > 0) {
 			SemErr(t->val, L" was already defined");
 			correct_cleansed = false;
 		}
 	}
-	global_variables.insert(wcsdup(t->val));
+	global_variables.insert(var_symbol);
 
 	while (la->kind == 5 /* "," */) {
 		Get();
 		Var();
+		var = wcsdup(t->val);
+		var_symbol = symbols[var];
 		if (check_for_cleansed) {
-			if (global_variables.count(t->val) > 0) {
+			if (global_variables.count(var_symbol) > 0) {
 				SemErr(t->val, L" was already defined");
 				correct_cleansed = false;
 			}
 		}
-		global_variables.insert(wcsdup(t->val));
+		global_variables.insert(var_symbol);
 	}
 
 	Expect(6 /* ")" */);
@@ -719,9 +741,10 @@ Parser::Parser(Scanner *scanner, bool check_for_cleansed) {
 	errDist = minErrDist;
 	this->scanner = scanner;
 	this->check_for_cleansed = check_for_cleansed;
-	this->global_variables = unordered_set<const wchar_t*, WCharPtrHash, WCharPtrEqual>();
-	this->gate_variables = unordered_map<const wchar_t*, Gate, WCharPtrHash, WCharPtrEqual>();
-	this->resolved_variables = unordered_set<const wchar_t*, WCharPtrHash, WCharPtrEqual>();
+	this->symbols = unordered_map<const wchar_t*, size_t, WCharPtrHash, WCharPtrEqual>();
+	this->gate_variables = unordered_map<size_t, Gate>();
+	this->global_variables = unordered_set<size_t>();
+	this->resolved_variables = unordered_set<size_t>();
 	errors = new Errors();
 }
 
@@ -757,9 +780,19 @@ Parser::~Parser() {
 
 	
 	delete output_gate;
-	global_variables.clear();
+	symbols.clear();
 	gate_variables.clear();
+	global_variables.clear();
 	resolved_variables.clear();
+}
+
+Gate::Gate() {
+	type = NO_QUANTIFIERS;
+	unresolved_variables = unordered_set<size_t>();
+}
+
+Gate::~Gate() {
+	unresolved_variables.clear();
 }
 
 Errors::Errors() {

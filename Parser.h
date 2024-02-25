@@ -34,9 +34,13 @@ enum Gate_type {
 	WAS_USED = 2
 };
 
-struct Gate {
-	unordered_set<const wchar_t*, WCharPtrHash, WCharPtrEqual> unresolved_variables;
+class Gate {
+public:
+	unordered_set<size_t> unresolved_variables;
 	Gate_type type;
+
+	Gate();
+	~Gate();
 };
 
 
@@ -86,9 +90,11 @@ public:
 
 	bool check_for_cleansed = false;
 	bool correct_cleansed = true;
-	unordered_set<const wchar_t*, WCharPtrHash, WCharPtrEqual> global_variables;
-	unordered_map<const wchar_t*, Gate, WCharPtrHash, WCharPtrEqual> gate_variables;
-	unordered_set<const wchar_t*, WCharPtrHash, WCharPtrEqual> resolved_variables;
+	unordered_map<const wchar_t*, size_t, WCharPtrHash, WCharPtrEqual> symbols;
+
+	unordered_set<size_t> global_variables;
+	unordered_map<size_t, Gate> gate_variables;
+	unordered_set<size_t> resolved_variables;
 
 	long n_variables;
 	wchar_t *output_gate;
