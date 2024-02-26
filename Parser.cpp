@@ -35,6 +35,16 @@ void Parser::Warning(const wchar_t *msg1, const wchar_t *msg2) const
 	errors->Warning(t->line, t->col, msg1, msg2);
 }
 
+void Parser::Err(const wchar_t *msg)
+{
+	errors->Error(t->line, t->col, msg);
+}
+
+void Parser::Err(const wchar_t *msg1, const wchar_t *msg2)
+{
+	errors->Error(t->line, t->col, msg1, msg2);
+}
+
 void Parser::Get()
 {
 	for (;;)
@@ -370,7 +380,7 @@ void Parser::Gate_stmt()
 	{
 		if (check_for_cleansed)
 		{
-			SemErr(L"xor gate is not allowed in cleansed form");
+			Err(L"xor gate is not allowed in cleansed form");
 			correct_cleansed = false;
 		}
 		else
@@ -446,7 +456,7 @@ void Parser::Gate_stmt()
 	{
 		if (check_for_cleansed)
 		{
-			SemErr(L"ite gate is not allowed in cleansed form");
+			Err(L"ite gate is not allowed in cleansed form");
 			correct_cleansed = false;
 		}
 		else

@@ -110,6 +110,8 @@ public:
 
 	Parser(Scanner *scanner, bool check_for_cleansed);
 	~Parser();
+	void Err(const wchar_t *msg);
+	void Err(const wchar_t *msg1, const wchar_t *msg2);
 	void SemErr(const wchar_t *msg);
 	void SemErr(const wchar_t *msg1, const wchar_t *msg2);
 	void Warning(const wchar_t *msg) const;
