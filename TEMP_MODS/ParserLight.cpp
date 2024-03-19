@@ -3,7 +3,7 @@
 #include "ParserLight.h"
 #include "Scanner.h"
 
-void ParserLight::Qcir_file()
+void ParserLight::Qcir_file_mod()
 {
 	Format_id();
 	Qblock_stmt();

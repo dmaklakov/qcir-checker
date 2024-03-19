@@ -118,7 +118,7 @@ public:
 	void Warning(const wchar_t *msg) const;
 	void Warning(const wchar_t *msg1, const wchar_t *msg2) const;
 
-	virtual void Qcir_file();
+	virtual void Qcir_file_mod();
 	void Format_id();
 	virtual void Qblock_stmt();
 	void Output_stmt();

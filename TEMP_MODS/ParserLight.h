@@ -19,7 +19,7 @@ public:
 	ParserLight(Scanner *scanner, bool check_for_cleansed);
 	~ParserLight();
 
-	void Qcir_file();
+	void Qcir_file_mod();
 	void Gate_stmt();
 
 }; // end Parser
