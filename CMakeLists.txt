@@ -12,7 +12,7 @@ set(SRCS
 # Actually define the executable.
 add_executable(qcir.exe ${SRCS})
 
-find_package(unordered_dense CONFIG REQUIRED)
+add_subdirectory(unordered_dense)
 target_link_libraries(qcir.exe unordered_dense::unordered_dense)
 
 # Enable Link-Time-Optimization (LTO) if supported.
