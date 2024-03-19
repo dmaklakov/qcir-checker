@@ -26,5 +26,5 @@ Your editor can then use the compile_commands.json for code completion.
 To run the programm, use:
 
 ```bash
-qcir.exe FILE [-cleansed] [-light]
+qcir.exe [-cleansed] [-light] FILE
 ```

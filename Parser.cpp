@@ -121,6 +121,7 @@ void Parser::Qcir_file_mod()
 	Format_id();
 	Qblock_stmt();
 	Output_stmt();
+
 	while (la->kind == _ident || la->kind == _number_ident)
 	{
 		Gate_stmt();
@@ -130,6 +131,8 @@ void Parser::Qcir_file_mod()
 			nl();
 		}
 	}
+
+	n_variables_real = gate_variables.size() + global_variables.size();
 
 	const size_t output_gate_symbol = getSymbol(output_gate);
 	if (gate_variables.count(output_gate_symbol) == 0)
@@ -165,40 +168,37 @@ void Parser::Qcir_file_mod()
 
 void Parser::Format_id()
 {
-	while (!(la->kind == _EOF || la->kind == 3 /* "#QCIR-G14" */))
-	{
+	// while (!(la->kind == _EOF || la->kind == 3 /* "#QCIR-G14" */))
+	/* {
 		SynErr(248);
 		Get();
-	}
+	} */
 	Expect(3 /* "#QCIR-G14" */);
 	if (la->kind == _number_ident)
 	{
 		Get();
-		if (check_for_cleansed)
+		if (isAllDigits(t->val))
 		{
-			if (isAllDigits(t->val))
-			{
-				wchar_t *end;
-				n_variables = wcstol(t->val, &end, 10);
-				if (n_variables <= 0)
-				{
-					SemErr(t->val, L"is not a positive number");
-					n_variables = -1;
-					correct_cleansed = false;
-				}
-			}
-			else
+			wchar_t *end;
+			n_variables_expected = wcstol(t->val, &end, 10);
+			if (n_variables_expected <= 0)
 			{
 				SemErr(t->val, L"is not a positive number");
-				n_variables = -1;
+				n_variables_expected = -1;
 				correct_cleansed = false;
 			}
+		}
+		else
+		{
+			SemErr(t->val, L"is not a positive number");
+			n_variables_expected = -1;
+			correct_cleansed = false;
 		}
 	}
 	else if (check_for_cleansed)
 	{
 		SemErr(L"Number of variables is not defined");
-		n_variables = -1;
+		n_variables_expected = -1;
 		correct_cleansed = false;
 	}
 
@@ -266,17 +266,18 @@ void Parser::Qblock_stmt()
 
 void Parser::Output_stmt()
 {
-	while (!(StartOf(4)))
+	/*while (!(StartOf(4)))
 	{
 		SynErr(250);
 		Get();
-	}
+	}*/
 	Output();
 	Expect(4 /* "(" */);
 	Lit();
 	output_gate = wcsdup(t->val);
 	Expect(6 /* ")" */);
 	nl();
+
 	while (la->kind == 246 /* "\n" */)
 	{
 		nl();
@@ -665,11 +666,11 @@ void Parser::Var()
 			SemErr(t->val, L"is not a correct variable name");
 			correct_cleansed = false;
 		}
-		else if (n_variables > 0)
+		else if (n_variables_expected > 0)
 		{
 			wchar_t *end;
 			long number = wcstol(t->val, &end, 10);
-			if (number <= 0 || number > n_variables)
+			if (number <= 0 || number > n_variables_expected)
 			{
 				SemErr(t->val, L"is not in the range of variables");
 				correct_cleansed = false;
@@ -1480,35 +1481,35 @@ void Errors::SynErr(int line, int col, int n)
 	}
 	break;
 	}
-	wprintf(L"-- SyntaxError: line %d col %d: %ls\n", line, col, s);
+	std::wcout << L"-- SyntaxError: line " << line << L" col " << col << L": " << s << std::endl;
 	coco_string_delete(s);
 	count++;
 }
 
 void Errors::Error(int line, int col, const wchar_t *s)
 {
-	wprintf(L"-- Error: line %d col %d: %ls\n", line, col, s);
+	std::wcout << L"-- Error: line " << line << L" col " << col << L": " << s << std::endl;
 	count++;
 }
 
 void Errors::Error(int line, int col, const wchar_t *s1, const wchar_t *s2)
 {
-	wprintf(L"-- Error: line %d col %d: %ls %ls\n", line, col, s1, s2);
+	std::wcout << L"-- Error: line " << line << L" col " << col << L": " << s1 << L" " << s2 << std::endl;
 	count++;
 }
 
 void Errors::Warning(int line, int col, const wchar_t *s)
 {
-	wprintf(L"-- Warning: line %d col %d: %ls\n", line, col, s);
+	std::wcout << L"-- Warning: line " << line << L" col " << col << L": " << s << std::endl;
 }
 
 void Errors::Warning(int line, int col, const wchar_t *s1, const wchar_t *s2)
 {
-	wprintf(L"-- Warning: line %d col %d: %ls %ls\n", line, col, s1, s2);
+	std::wcout << L"-- Warning: line " << line << L" col " << col << L": " << s1 << L" " << s2 << std::endl;
 }
 
 void Errors::Exception(const wchar_t *s)
 {
-	wprintf(L"%ls", s);
+	std::wcout << s << std::endl;
 	exit(1);
 }
