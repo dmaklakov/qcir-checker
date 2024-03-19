@@ -105,7 +105,8 @@ public:
 	ankerl::unordered_dense::map<size_t, Gate> gate_variables;
 	ankerl::unordered_dense::set<size_t> resolved_variables;
 
-	long n_variables;
+	long n_variables_expected;
+	long n_variables_real;
 	wchar_t *output_gate;
 
 	Parser(Scanner *scanner, bool check_for_cleansed);
