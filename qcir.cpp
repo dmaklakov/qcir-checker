@@ -69,6 +69,10 @@ int main(int argc, char *argv[])
     time_t end = time(0);
 
     int n_errors = parser->errors->count + scanner->errors_count;
+    if (n_errors > 0)
+    {
+        parser->correct_cleansed = false;
+    }
     std::cout << "Number of errors: " << n_errors << std::endl;
     if (parser->n_variables_expected > 0)
     {
@@ -82,5 +86,5 @@ int main(int argc, char *argv[])
     }
     std::cout << "Time of execution: " << difftime(end, start) << "s" << std::endl;
 
-    return check_for_cleansed ? (parser->errors->count == 0 && parser->correct_cleansed ? EXIT_SUCCESS : EXIT_FAILURE) : (parser->errors->count == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+    return check_for_cleansed ? (n_errors == 0 && parser->correct_cleansed ? EXIT_SUCCESS : EXIT_FAILURE) : (n_errors == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
