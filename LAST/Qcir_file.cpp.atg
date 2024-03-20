@@ -18,22 +18,22 @@ IGNORE cr +  tab
 PRODUCTIONS
 /*------------------------------------------------------------------------*/
 Qcir_file =
-	[Format_id] Qblock_stmt [Output_stmt] { Gate_stmt nl { nl } } .
+	[Format_id] SYNC Qblock_stmt SYNC [Output_stmt] SYNC { SYNC Gate_stmt nl { nl }} .
 	
 Format_id =
 	/* { nl } */ "#QCIR-G14" [number_ident] nl { nl } .
 
 Qblock_stmt =
-	SYNC [ Free '(' Var { ',' Var } ')' nl { nl } ] { Qblock_quant } . 
+	[ Free '(' Var { ',' Var } ')' nl { nl } ] SYNC { SYNC Qblock_quant } . 
 	
 Qblock_quant =
-	SYNC Quant '(' Var { ',' Var } ')' nl { nl }.
+	Quant '(' Var { ',' Var } ')' nl { nl }.
 
 Output_stmt =
-	SYNC Output '(' Lit ')' nl { nl }.
+	Output '(' Lit ')' nl { nl }.
 
 Gate_stmt =
-	SYNC Var '=' (
+	Var '=' (
 		Ngate_type '(' [Lit { ',' Lit }] ')' |
 		Xor '(' Lit ',' Lit ')' |
 		Ite '(' Lit ',' Lit ',' Lit ')' |
