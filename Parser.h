@@ -108,6 +108,7 @@ public:
 	long n_variables_expected;
 	long n_variables_real;
 	wchar_t *output_gate;
+	bool output_gate_defined = false;
 
 	Parser(Scanner *scanner, bool check_for_cleansed);
 	~Parser();

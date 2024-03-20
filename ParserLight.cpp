@@ -3,11 +3,27 @@
 #include "ParserLight.h"
 #include "Scanner.h"
 
-void ParserLight::Qcir_file()
+void ParserLight::Qcir_file_mod()
 {
-	Format_id();
+	if (la->kind == 3 /* "#QCIR-G14" */)
+	{
+		Format_id();
+	}
+	else
+	{
+		SynErr(3);
+	}
 	Qblock_stmt();
-	Output_stmt();
+	if (StartOf(1))
+	{
+		Output_stmt();
+	}
+	else
+	{
+		output_gate = L"undefined";
+		SynErr(38);
+	}
+
 	while (la->kind == _ident || la->kind == _number_ident)
 	{
 		Gate_stmt();
@@ -17,33 +33,39 @@ void ParserLight::Qcir_file()
 			nl();
 		}
 	}
-	size_t output_gate_symbol = getSymbol(output_gate);
-	if (global_variables.count(output_gate_symbol) > 0)
+
+	n_variables_real = gate_variables.size() + global_variables.size();
+
+	if (output_gate_defined)
 	{
-		SemErr(output_gate, L"is not a gate variable");
-		correct_cleansed = false;
-	}
-	else if (gate_variables_set.count(output_gate_symbol) == 0)
-	{
-		SemErr(output_gate, L"output gate was not defined");
-		correct_cleansed = false;
-	}
-	else
-	{
-		if (!unresolved_variables.empty())
+		size_t output_gate_symbol = getSymbol(output_gate);
+		if (global_variables.count(output_gate_symbol) > 0)
 		{
-			for (const auto unresolved_variable : unresolved_variables)
+			SemErr(output_gate, L"is not a gate variable");
+			correct_cleansed = false;
+		}
+		else if (gate_variables_set.count(output_gate_symbol) == 0)
+		{
+			SemErr(output_gate, L"output gate was not defined");
+			correct_cleansed = false;
+		}
+		else
+		{
+			if (!unresolved_variables.empty())
 			{
-				for (const auto pair : symbols)
+				for (const auto unresolved_variable : unresolved_variables)
 				{
-					if (pair.second == unresolved_variable)
+					for (const auto pair : symbols)
 					{
-						SemErr(pair.first, L" was unresolved");
-						break;
+						if (pair.second == unresolved_variable)
+						{
+							SemErr(pair.first, L" was unresolved");
+							break;
+						}
 					}
 				}
+				correct_cleansed = false;
 			}
-			correct_cleansed = false;
 		}
 	}
 }
