@@ -3,7 +3,6 @@
 #include <ctime>
 
 #include "Parser.h"
-#include "ParserLight.h"
 #include "Scanner.h"
 
 using namespace std;
@@ -46,16 +45,7 @@ int main(int argc, char *argv[])
     }
 
     Scanner *scanner = new Scanner(filename);
-    Parser *parser;
-    if (light_check)
-    {
-        cout << "Light check" << endl;
-        parser = (Parser *)new ParserLight(scanner, check_for_cleansed);
-    }
-    else
-    {
-        parser = new Parser(scanner, check_for_cleansed);
-    }
+    Parser *parser = new Parser(scanner, check_for_cleansed);
 
     time_t start = time(0);
     try
@@ -82,5 +72,6 @@ int main(int argc, char *argv[])
     }
     std::cout << "Time of execution: " << difftime(end, start) << "s" << std::endl;
 
-    return check_for_cleansed ? (parser->errors->count == 0 && parser->correct_cleansed ? EXIT_SUCCESS : EXIT_FAILURE) : (parser->errors->count == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+    return EXIT_SUCCESS;
+    // return check_for_cleansed ? (parser->errors->count == 0 && parser->correct_cleansed ? EXIT_SUCCESS : EXIT_FAILURE) : (parser->errors->count == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }

@@ -949,18 +949,22 @@ bool Scanner::Comment0()
 	}
 	for (;;)
 	{
-		if (ch == 10)
+		if (ch == 13)
 		{
-			std::wcout << "-- SyntaxError: line " << line0 << ": comments are not allowed" << std::endl;
-			errors_count++;
-			level--;
-			if (level == 0)
-			{
-				oldEols = line - line0;
-				NextCh();
-				return true;
-			}
 			NextCh();
+			if (ch == 10)
+			{
+				std::wcout << "-- SyntaxError: line " << line0 << ": comments are not allowed" << std::endl;
+				errors_count++;
+				level--;
+				if (level == 0)
+				{
+					oldEols = line - line0;
+					NextCh();
+					return true;
+				}
+				NextCh();
+			}
 		}
 		else if (ch == buffer->EoF)
 			return false;

@@ -1,7 +1,7 @@
 #if !defined(COCO_PARSER_H__)
 #define COCO_PARSER_H__
 
-#include <ankerl/unordered_dense.h>
+// #include <ankerl/unordered_dense.h>
 
 #include <unordered_set>
 #include <unordered_map>
@@ -44,7 +44,8 @@ enum Gate_type
 class Gate
 {
 public:
-	ankerl::unordered_dense::set<size_t> unresolved_variables;
+	// ankerl::unordered_dense::set<size_t> unresolved_variables;
+	unordered_set<size_t> unresolved_variables;
 
 	Gate_type type;
 
@@ -103,11 +104,15 @@ public:
 
 	bool check_for_cleansed = false;
 	bool correct_cleansed = true;
-	ankerl::unordered_dense::map<const wchar_t *, size_t, WCharPtrHash, WCharPtrEqual> symbols;
+	// ankerl::unordered_dense::map<const wchar_t *, size_t, WCharPtrHash, WCharPtrEqual> symbols;
+	unordered_map<const wchar_t *, size_t, WCharPtrHash, WCharPtrEqual> symbols;
 
-	ankerl::unordered_dense::set<size_t> global_variables;
-	ankerl::unordered_dense::map<size_t, Gate> gate_variables;
-	ankerl::unordered_dense::set<size_t> resolved_variables;
+	// ankerl::unordered_dense::set<size_t> global_variables;
+	unordered_set<size_t> global_variables;
+	// ankerl::unordered_dense::map<size_t, Gate> gate_variables;
+	unordered_map<size_t, Gate> gate_variables;
+	// ankerl::unordered_dense::set<size_t> resolved_variables;
+	unordered_set<size_t> resolved_variables;
 
 	long n_variables_expected;
 	long n_variables_real;

@@ -140,11 +140,11 @@ void Parser::Qcir_file()
 	}
 	if (StartOf(3))
 	{
+		correct_cleansed = false;
 		Output_stmt();
 	}
 	else
 	{
-		correct_cleansed = false;
 		Err(L"output gate definition is missing");
 	}
 	while (!(la->kind == _EOF || la->kind == _ident || la->kind == _number_ident))
@@ -1097,11 +1097,11 @@ Parser::Parser(Scanner *scanner, bool check_for_cleansed)
 	this->check_for_cleansed = check_for_cleansed;
 	this->output_gate = L"undefined";
 	this->output_gate_defined = false;
-	this->symbols = ankerl::unordered_dense::map<const wchar_t *, size_t, WCharPtrHash, WCharPtrEqual>();
+	this->symbols = std::unordered_map<const wchar_t *, size_t, WCharPtrHash, WCharPtrEqual>();
 	this->symbols_size = 0;
-	this->gate_variables = ankerl::unordered_dense::map<size_t, Gate>();
-	this->global_variables = ankerl::unordered_dense::set<size_t>();
-	this->resolved_variables = ankerl::unordered_dense::set<size_t>();
+	this->gate_variables = std::unordered_map<size_t, Gate>();
+	this->global_variables = std::unordered_set<size_t>();
+	this->resolved_variables = std::unordered_set<size_t>();
 	errors = new Errors();
 }
 
@@ -1146,7 +1146,8 @@ Parser::~Parser()
 Gate::Gate()
 {
 	type = NO_QUANTIFIERS;
-	unresolved_variables = ankerl::unordered_dense::set<size_t>();
+	// TODO: unresolved_variables = ankerl::unordered_dense::set<size_t>();
+	unresolved_variables = unordered_set<size_t>();
 }
 
 Gate::~Gate()
@@ -1195,256 +1196,712 @@ void Errors::SynErr(int line, int col, int n)
 		s = coco_string_create(L"\"-\" expected");
 		break;
 	case 10:
-	case 11:
-	case 12:
-	case 13:
-	case 14:
-	case 15:
-	case 16:
-	case 17:
 		s = coco_string_create(L"\"xor\" expected");
 		break;
+	case 11:
+		s = coco_string_create(L"\"xoR\" expected");
+		break;
+	case 12:
+		s = coco_string_create(L"\"xOr\" expected");
+		break;
+	case 13:
+		s = coco_string_create(L"\"xOR\" expected");
+		break;
+	case 14:
+		s = coco_string_create(L"\"Xor\" expected");
+		break;
+	case 15:
+		s = coco_string_create(L"\"XoR\" expected");
+		break;
+	case 16:
+		s = coco_string_create(L"\"XOr\" expected");
+		break;
+	case 17:
+		s = coco_string_create(L"\"XOR\" expected");
+		break;
 	case 18:
-	case 19:
-	case 20:
-	case 21:
-	case 22:
-	case 23:
-	case 24:
-	case 25:
 		s = coco_string_create(L"\"ite\" expected");
 		break;
+	case 19:
+		s = coco_string_create(L"\"itE\" expected");
+		break;
+	case 20:
+		s = coco_string_create(L"\"iTe\" expected");
+		break;
+	case 21:
+		s = coco_string_create(L"\"iTE\" expected");
+		break;
+	case 22:
+		s = coco_string_create(L"\"Ite\" expected");
+		break;
+	case 23:
+		s = coco_string_create(L"\"ItE\" expected");
+		break;
+	case 24:
+		s = coco_string_create(L"\"ITe\" expected");
+		break;
+	case 25:
+		s = coco_string_create(L"\"ITE\" expected");
+		break;
 	case 26:
-	case 27:
-	case 28:
-	case 29:
-	case 30:
-	case 31:
-	case 32:
-	case 33:
 		s = coco_string_create(L"\"and\" expected");
 		break;
+	case 27:
+		s = coco_string_create(L"\"anD\" expected");
+		break;
+	case 28:
+		s = coco_string_create(L"\"aNd\" expected");
+		break;
+	case 29:
+		s = coco_string_create(L"\"aND\" expected");
+		break;
+	case 30:
+		s = coco_string_create(L"\"And\" expected");
+		break;
+	case 31:
+		s = coco_string_create(L"\"AnD\" expected");
+		break;
+	case 32:
+		s = coco_string_create(L"\"ANd\" expected");
+		break;
+	case 33:
+		s = coco_string_create(L"\"AND\" expected");
+		break;
 	case 34:
-	case 35:
-	case 36:
-	case 37:
 		s = coco_string_create(L"\"or\" expected");
 		break;
+	case 35:
+		s = coco_string_create(L"\"oR\" expected");
+		break;
+	case 36:
+		s = coco_string_create(L"\"Or\" expected");
+		break;
+	case 37:
+		s = coco_string_create(L"\"OR\" expected");
+		break;
 	case 38:
-	case 39:
-	case 40:
-	case 41:
-	case 42:
-	case 43:
-	case 44:
-	case 45:
-	case 46:
-	case 47:
-	case 48:
-	case 49:
-	case 50:
-	case 51:
-	case 52:
-	case 53:
-	case 54:
-	case 55:
-	case 56:
-	case 57:
-	case 58:
-	case 59:
-	case 60:
-	case 61:
-	case 62:
-	case 63:
-	case 64:
-	case 65:
-	case 66:
-	case 67:
-	case 68:
-	case 69:
-	case 70:
-	case 71:
-	case 72:
-	case 73:
-	case 74:
-	case 75:
-	case 76:
-	case 77:
-	case 78:
-	case 79:
-	case 80:
-	case 81:
-	case 82:
-	case 83:
-	case 84:
-	case 85:
-	case 86:
-	case 87:
-	case 88:
-	case 89:
-	case 90:
-	case 91:
-	case 92:
-	case 93:
-	case 94:
-	case 95:
-	case 96:
-	case 97:
-	case 98:
-	case 99:
-	case 100:
-	case 101:
 		s = coco_string_create(L"\"output\" expected");
 		break;
+	case 39:
+		s = coco_string_create(L"\"outpuT\" expected");
+		break;
+	case 40:
+		s = coco_string_create(L"\"outpUt\" expected");
+		break;
+	case 41:
+		s = coco_string_create(L"\"outpUT\" expected");
+		break;
+	case 42:
+		s = coco_string_create(L"\"outPut\" expected");
+		break;
+	case 43:
+		s = coco_string_create(L"\"outPuT\" expected");
+		break;
+	case 44:
+		s = coco_string_create(L"\"outPUt\" expected");
+		break;
+	case 45:
+		s = coco_string_create(L"\"outPUT\" expected");
+		break;
+	case 46:
+		s = coco_string_create(L"\"ouTput\" expected");
+		break;
+	case 47:
+		s = coco_string_create(L"\"ouTpuT\" expected");
+		break;
+	case 48:
+		s = coco_string_create(L"\"ouTpUt\" expected");
+		break;
+	case 49:
+		s = coco_string_create(L"\"ouTpUT\" expected");
+		break;
+	case 50:
+		s = coco_string_create(L"\"ouTPut\" expected");
+		break;
+	case 51:
+		s = coco_string_create(L"\"ouTPuT\" expected");
+		break;
+	case 52:
+		s = coco_string_create(L"\"ouTPUt\" expected");
+		break;
+	case 53:
+		s = coco_string_create(L"\"ouTPUT\" expected");
+		break;
+	case 54:
+		s = coco_string_create(L"\"oUtput\" expected");
+		break;
+	case 55:
+		s = coco_string_create(L"\"oUtpuT\" expected");
+		break;
+	case 56:
+		s = coco_string_create(L"\"oUtpUt\" expected");
+		break;
+	case 57:
+		s = coco_string_create(L"\"oUtpUT\" expected");
+		break;
+	case 58:
+		s = coco_string_create(L"\"oUtPut\" expected");
+		break;
+	case 59:
+		s = coco_string_create(L"\"oUtPuT\" expected");
+		break;
+	case 60:
+		s = coco_string_create(L"\"oUtPUt\" expected");
+		break;
+	case 61:
+		s = coco_string_create(L"\"oUtPUT\" expected");
+		break;
+	case 62:
+		s = coco_string_create(L"\"oUTput\" expected");
+		break;
+	case 63:
+		s = coco_string_create(L"\"oUTpuT\" expected");
+		break;
+	case 64:
+		s = coco_string_create(L"\"oUTpUt\" expected");
+		break;
+	case 65:
+		s = coco_string_create(L"\"oUTpUT\" expected");
+		break;
+	case 66:
+		s = coco_string_create(L"\"oUTPut\" expected");
+		break;
+	case 67:
+		s = coco_string_create(L"\"oUTPuT\" expected");
+		break;
+	case 68:
+		s = coco_string_create(L"\"oUTPUt\" expected");
+		break;
+	case 69:
+		s = coco_string_create(L"\"oUTPUT\" expected");
+		break;
+	case 70:
+		s = coco_string_create(L"\"Output\" expected");
+		break;
+	case 71:
+		s = coco_string_create(L"\"OutpuT\" expected");
+		break;
+	case 72:
+		s = coco_string_create(L"\"OutpUt\" expected");
+		break;
+	case 73:
+		s = coco_string_create(L"\"OutpUT\" expected");
+		break;
+	case 74:
+		s = coco_string_create(L"\"OutPut\" expected");
+		break;
+	case 75:
+		s = coco_string_create(L"\"OutPuT\" expected");
+		break;
+	case 76:
+		s = coco_string_create(L"\"OutPUt\" expected");
+		break;
+	case 77:
+		s = coco_string_create(L"\"OutPUT\" expected");
+		break;
+	case 78:
+		s = coco_string_create(L"\"OuTput\" expected");
+		break;
+	case 79:
+		s = coco_string_create(L"\"OuTpuT\" expected");
+		break;
+	case 80:
+		s = coco_string_create(L"\"OuTpUt\" expected");
+		break;
+	case 81:
+		s = coco_string_create(L"\"OuTpUT\" expected");
+		break;
+	case 82:
+		s = coco_string_create(L"\"OuTPut\" expected");
+		break;
+	case 83:
+		s = coco_string_create(L"\"OuTPuT\" expected");
+		break;
+	case 84:
+		s = coco_string_create(L"\"OuTPUt\" expected");
+		break;
+	case 85:
+		s = coco_string_create(L"\"OuTPUT\" expected");
+		break;
+	case 86:
+		s = coco_string_create(L"\"OUtput\" expected");
+		break;
+	case 87:
+		s = coco_string_create(L"\"OUtpuT\" expected");
+		break;
+	case 88:
+		s = coco_string_create(L"\"OUtpUt\" expected");
+		break;
+	case 89:
+		s = coco_string_create(L"\"OUtpUT\" expected");
+		break;
+	case 90:
+		s = coco_string_create(L"\"OUtPut\" expected");
+		break;
+	case 91:
+		s = coco_string_create(L"\"OUtPuT\" expected");
+		break;
+	case 92:
+		s = coco_string_create(L"\"OUtPUt\" expected");
+		break;
+	case 93:
+		s = coco_string_create(L"\"OUtPUT\" expected");
+		break;
+	case 94:
+		s = coco_string_create(L"\"OUTput\" expected");
+		break;
+	case 95:
+		s = coco_string_create(L"\"OUTpuT\" expected");
+		break;
+	case 96:
+		s = coco_string_create(L"\"OUTpUt\" expected");
+		break;
+	case 97:
+		s = coco_string_create(L"\"OUTpUT\" expected");
+		break;
+	case 98:
+		s = coco_string_create(L"\"OUTPut\" expected");
+		break;
+	case 99:
+		s = coco_string_create(L"\"OUTPuT\" expected");
+		break;
+	case 100:
+		s = coco_string_create(L"\"OUTPUt\" expected");
+		break;
+	case 101:
+		s = coco_string_create(L"\"OUTPUT\" expected");
+		break;
 	case 102:
+		s = coco_string_create(L"\"free\" expected");
+		break;
 	case 103:
+		s = coco_string_create(L"\"freE\" expected");
+		break;
 	case 104:
+		s = coco_string_create(L"\"frEe\" expected");
+		break;
 	case 105:
+		s = coco_string_create(L"\"frEE\" expected");
+		break;
 	case 106:
+		s = coco_string_create(L"\"fRee\" expected");
+		break;
 	case 107:
+		s = coco_string_create(L"\"fReE\" expected");
+		break;
 	case 108:
+		s = coco_string_create(L"\"fREe\" expected");
+		break;
 	case 109:
+		s = coco_string_create(L"\"fREE\" expected");
+		break;
 	case 110:
+		s = coco_string_create(L"\"Free\" expected");
+		break;
 	case 111:
+		s = coco_string_create(L"\"FreE\" expected");
+		break;
 	case 112:
+		s = coco_string_create(L"\"FrEe\" expected");
+		break;
 	case 113:
+		s = coco_string_create(L"\"FrEE\" expected");
+		break;
 	case 114:
+		s = coco_string_create(L"\"FRee\" expected");
+		break;
 	case 115:
+		s = coco_string_create(L"\"FReE\" expected");
+		break;
 	case 116:
+		s = coco_string_create(L"\"FREe\" expected");
+		break;
 	case 117:
 		s = coco_string_create(L"\"FREE\" expected");
 		break;
 	case 118:
-	case 119:
-	case 120:
-	case 121:
-	case 122:
-	case 123:
-	case 124:
-	case 125:
-	case 126:
-	case 127:
-	case 128:
-	case 129:
-	case 130:
-	case 131:
-	case 132:
-	case 133:
-	case 134:
-	case 135:
-	case 136:
-	case 137:
-	case 138:
-	case 139:
-	case 140:
-	case 141:
-	case 142:
-	case 143:
-	case 144:
-	case 145:
-	case 146:
-	case 147:
-	case 148:
-	case 149:
-	case 150:
-	case 151:
-	case 152:
-	case 153:
-	case 154:
-	case 155:
-	case 156:
-	case 157:
-	case 158:
-	case 159:
-	case 160:
-	case 161:
-	case 162:
-	case 163:
-	case 164:
-	case 165:
-	case 166:
-	case 167:
-	case 168:
-	case 169:
-	case 170:
-	case 171:
-	case 172:
-	case 173:
-	case 174:
-	case 175:
-	case 176:
-	case 177:
-	case 178:
-	case 179:
-	case 180:
-	case 181:
 		s = coco_string_create(L"\"exists\" expected");
 		break;
+	case 119:
+		s = coco_string_create(L"\"existS\" expected");
+		break;
+	case 120:
+		s = coco_string_create(L"\"exisTs\" expected");
+		break;
+	case 121:
+		s = coco_string_create(L"\"exisTS\" expected");
+		break;
+	case 122:
+		s = coco_string_create(L"\"exiSts\" expected");
+		break;
+	case 123:
+		s = coco_string_create(L"\"exiStS\" expected");
+		break;
+	case 124:
+		s = coco_string_create(L"\"exiSTs\" expected");
+		break;
+	case 125:
+		s = coco_string_create(L"\"exiSTS\" expected");
+		break;
+	case 126:
+		s = coco_string_create(L"\"exIsts\" expected");
+		break;
+	case 127:
+		s = coco_string_create(L"\"exIstS\" expected");
+		break;
+	case 128:
+		s = coco_string_create(L"\"exIsTs\" expected");
+		break;
+	case 129:
+		s = coco_string_create(L"\"exIsTS\" expected");
+		break;
+	case 130:
+		s = coco_string_create(L"\"exISts\" expected");
+		break;
+	case 131:
+		s = coco_string_create(L"\"exIStS\" expected");
+		break;
+	case 132:
+		s = coco_string_create(L"\"exISTs\" expected");
+		break;
+	case 133:
+		s = coco_string_create(L"\"exISTS\" expected");
+		break;
+	case 134:
+		s = coco_string_create(L"\"eXists\" expected");
+		break;
+	case 135:
+		s = coco_string_create(L"\"eXistS\" expected");
+		break;
+	case 136:
+		s = coco_string_create(L"\"eXisTs\" expected");
+		break;
+	case 137:
+		s = coco_string_create(L"\"eXisTS\" expected");
+		break;
+	case 138:
+		s = coco_string_create(L"\"eXiSts\" expected");
+		break;
+	case 139:
+		s = coco_string_create(L"\"eXiStS\" expected");
+		break;
+	case 140:
+		s = coco_string_create(L"\"eXiSTs\" expected");
+		break;
+	case 141:
+		s = coco_string_create(L"\"eXiSTS\" expected");
+		break;
+	case 142:
+		s = coco_string_create(L"\"eXIsts\" expected");
+		break;
+	case 143:
+		s = coco_string_create(L"\"eXIstS\" expected");
+		break;
+	case 144:
+		s = coco_string_create(L"\"eXIsTs\" expected");
+		break;
+	case 145:
+		s = coco_string_create(L"\"eXIsTS\" expected");
+		break;
+	case 146:
+		s = coco_string_create(L"\"eXISts\" expected");
+		break;
+	case 147:
+		s = coco_string_create(L"\"eXIStS\" expected");
+		break;
+	case 148:
+		s = coco_string_create(L"\"eXISTs\" expected");
+		break;
+	case 149:
+		s = coco_string_create(L"\"eXISTS\" expected");
+		break;
+	case 150:
+		s = coco_string_create(L"\"Exists\" expected");
+		break;
+	case 151:
+		s = coco_string_create(L"\"ExistS\" expected");
+		break;
+	case 152:
+		s = coco_string_create(L"\"ExisTs\" expected");
+		break;
+	case 153:
+		s = coco_string_create(L"\"ExisTS\" expected");
+		break;
+	case 154:
+		s = coco_string_create(L"\"ExiSts\" expected");
+		break;
+	case 155:
+		s = coco_string_create(L"\"ExiStS\" expected");
+		break;
+	case 156:
+		s = coco_string_create(L"\"ExiSTs\" expected");
+		break;
+	case 157:
+		s = coco_string_create(L"\"ExiSTS\" expected");
+		break;
+	case 158:
+		s = coco_string_create(L"\"ExIsts\" expected");
+		break;
+	case 159:
+		s = coco_string_create(L"\"ExIstS\" expected");
+		break;
+	case 160:
+		s = coco_string_create(L"\"ExIsTs\" expected");
+		break;
+	case 161:
+		s = coco_string_create(L"\"ExIsTS\" expected");
+		break;
+	case 162:
+		s = coco_string_create(L"\"ExISts\" expected");
+		break;
+	case 163:
+		s = coco_string_create(L"\"ExIStS\" expected");
+		break;
+	case 164:
+		s = coco_string_create(L"\"ExISTs\" expected");
+		break;
+	case 165:
+		s = coco_string_create(L"\"ExISTS\" expected");
+		break;
+	case 166:
+		s = coco_string_create(L"\"EXists\" expected");
+		break;
+	case 167:
+		s = coco_string_create(L"\"EXistS\" expected");
+		break;
+	case 168:
+		s = coco_string_create(L"\"EXisTs\" expected");
+		break;
+	case 169:
+		s = coco_string_create(L"\"EXisTS\" expected");
+		break;
+	case 170:
+		s = coco_string_create(L"\"EXiSts\" expected");
+		break;
+	case 171:
+		s = coco_string_create(L"\"EXiStS\" expected");
+		break;
+	case 172:
+		s = coco_string_create(L"\"EXiSTs\" expected");
+		break;
+	case 173:
+		s = coco_string_create(L"\"EXiSTS\" expected");
+		break;
+	case 174:
+		s = coco_string_create(L"\"EXIsts\" expected");
+		break;
+	case 175:
+		s = coco_string_create(L"\"EXIstS\" expected");
+		break;
+	case 176:
+		s = coco_string_create(L"\"EXIsTs\" expected");
+		break;
+	case 177:
+		s = coco_string_create(L"\"EXIsTS\" expected");
+		break;
+	case 178:
+		s = coco_string_create(L"\"EXISts\" expected");
+		break;
+	case 179:
+		s = coco_string_create(L"\"EXIStS\" expected");
+		break;
+	case 180:
+		s = coco_string_create(L"\"EXISTs\" expected");
+		break;
+	case 181:
+		s = coco_string_create(L"\"EXISTS\" expected");
+		break;
 	case 182:
-	case 183:
-	case 184:
-	case 185:
-	case 186:
-	case 187:
-	case 188:
-	case 189:
-	case 190:
-	case 191:
-	case 192:
-	case 193:
-	case 194:
-	case 195:
-	case 196:
-	case 197:
-	case 198:
-	case 199:
-	case 200:
-	case 201:
-	case 202:
-	case 203:
-	case 204:
-	case 205:
-	case 206:
-	case 207:
-	case 208:
-	case 209:
-	case 210:
-	case 211:
-	case 212:
-	case 213:
-	case 214:
-	case 215:
-	case 216:
-	case 217:
-	case 218:
-	case 219:
-	case 220:
-	case 221:
-	case 222:
-	case 223:
-	case 224:
-	case 225:
-	case 226:
-	case 227:
-	case 228:
-	case 229:
-	case 230:
-	case 231:
-	case 232:
-	case 233:
-	case 234:
-	case 235:
-	case 236:
-	case 237:
-	case 238:
-	case 239:
-	case 240:
-	case 241:
-	case 242:
-	case 243:
-	case 244:
-	case 245:
 		s = coco_string_create(L"\"forall\" expected");
+		break;
+	case 183:
+		s = coco_string_create(L"\"foralL\" expected");
+		break;
+	case 184:
+		s = coco_string_create(L"\"foraLl\" expected");
+		break;
+	case 185:
+		s = coco_string_create(L"\"foraLL\" expected");
+		break;
+	case 186:
+		s = coco_string_create(L"\"forAll\" expected");
+		break;
+	case 187:
+		s = coco_string_create(L"\"forAlL\" expected");
+		break;
+	case 188:
+		s = coco_string_create(L"\"forALl\" expected");
+		break;
+	case 189:
+		s = coco_string_create(L"\"forALL\" expected");
+		break;
+	case 190:
+		s = coco_string_create(L"\"foRall\" expected");
+		break;
+	case 191:
+		s = coco_string_create(L"\"foRalL\" expected");
+		break;
+	case 192:
+		s = coco_string_create(L"\"foRaLl\" expected");
+		break;
+	case 193:
+		s = coco_string_create(L"\"foRaLL\" expected");
+		break;
+	case 194:
+		s = coco_string_create(L"\"foRAll\" expected");
+		break;
+	case 195:
+		s = coco_string_create(L"\"foRAlL\" expected");
+		break;
+	case 196:
+		s = coco_string_create(L"\"foRALl\" expected");
+		break;
+	case 197:
+		s = coco_string_create(L"\"foRALL\" expected");
+		break;
+	case 198:
+		s = coco_string_create(L"\"fOrall\" expected");
+		break;
+	case 199:
+		s = coco_string_create(L"\"fOralL\" expected");
+		break;
+	case 200:
+		s = coco_string_create(L"\"fOraLl\" expected");
+		break;
+	case 201:
+		s = coco_string_create(L"\"fOraLL\" expected");
+		break;
+	case 202:
+		s = coco_string_create(L"\"fOrAll\" expected");
+		break;
+	case 203:
+		s = coco_string_create(L"\"fOrAlL\" expected");
+		break;
+	case 204:
+		s = coco_string_create(L"\"fOrALl\" expected");
+		break;
+	case 205:
+		s = coco_string_create(L"\"fOrALL\" expected");
+		break;
+	case 206:
+		s = coco_string_create(L"\"fORall\" expected");
+		break;
+	case 207:
+		s = coco_string_create(L"\"fORalL\" expected");
+		break;
+	case 208:
+		s = coco_string_create(L"\"fORaLl\" expected");
+		break;
+	case 209:
+		s = coco_string_create(L"\"fORaLL\" expected");
+		break;
+	case 210:
+		s = coco_string_create(L"\"fORAll\" expected");
+		break;
+	case 211:
+		s = coco_string_create(L"\"fORAlL\" expected");
+		break;
+	case 212:
+		s = coco_string_create(L"\"fORALl\" expected");
+		break;
+	case 213:
+		s = coco_string_create(L"\"fORALL\" expected");
+		break;
+	case 214:
+		s = coco_string_create(L"\"Forall\" expected");
+		break;
+	case 215:
+		s = coco_string_create(L"\"ForalL\" expected");
+		break;
+	case 216:
+		s = coco_string_create(L"\"ForaLl\" expected");
+		break;
+	case 217:
+		s = coco_string_create(L"\"ForaLL\" expected");
+		break;
+	case 218:
+		s = coco_string_create(L"\"ForAll\" expected");
+		break;
+	case 219:
+		s = coco_string_create(L"\"ForAlL\" expected");
+		break;
+	case 220:
+		s = coco_string_create(L"\"ForALl\" expected");
+		break;
+	case 221:
+		s = coco_string_create(L"\"ForALL\" expected");
+		break;
+	case 222:
+		s = coco_string_create(L"\"FoRall\" expected");
+		break;
+	case 223:
+		s = coco_string_create(L"\"FoRalL\" expected");
+		break;
+	case 224:
+		s = coco_string_create(L"\"FoRaLl\" expected");
+		break;
+	case 225:
+		s = coco_string_create(L"\"FoRaLL\" expected");
+		break;
+	case 226:
+		s = coco_string_create(L"\"FoRAll\" expected");
+		break;
+	case 227:
+		s = coco_string_create(L"\"FoRAlL\" expected");
+		break;
+	case 228:
+		s = coco_string_create(L"\"FoRALl\" expected");
+		break;
+	case 229:
+		s = coco_string_create(L"\"FoRALL\" expected");
+		break;
+	case 230:
+		s = coco_string_create(L"\"FOrall\" expected");
+		break;
+	case 231:
+		s = coco_string_create(L"\"FOralL\" expected");
+		break;
+	case 232:
+		s = coco_string_create(L"\"FOraLl\" expected");
+		break;
+	case 233:
+		s = coco_string_create(L"\"FOraLL\" expected");
+		break;
+	case 234:
+		s = coco_string_create(L"\"FOrAll\" expected");
+		break;
+	case 235:
+		s = coco_string_create(L"\"FOrAlL\" expected");
+		break;
+	case 236:
+		s = coco_string_create(L"\"FOrALl\" expected");
+		break;
+	case 237:
+		s = coco_string_create(L"\"FOrALL\" expected");
+		break;
+	case 238:
+		s = coco_string_create(L"\"FORall\" expected");
+		break;
+	case 239:
+		s = coco_string_create(L"\"FORalL\" expected");
+		break;
+	case 240:
+		s = coco_string_create(L"\"FORaLl\" expected");
+		break;
+	case 241:
+		s = coco_string_create(L"\"FORaLL\" expected");
+		break;
+	case 242:
+		s = coco_string_create(L"\"FORAll\" expected");
+		break;
+	case 243:
+		s = coco_string_create(L"\"FORAlL\" expected");
+		break;
+	case 244:
+		s = coco_string_create(L"\"FORALl\" expected");
+		break;
+	case 245:
+		s = coco_string_create(L"\"FORALL\" expected");
 		break;
 	case 246:
 		s = coco_string_create(L"\"\\n\" expected");
