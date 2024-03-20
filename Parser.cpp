@@ -510,7 +510,6 @@ void Parser::Gate_stmt()
 		Expect(5 /* "," */);
 		Lit();
 		var = wcsdup(t->val);
-		var = wcsdup(t->val);
 		var_symbol = getSymbol(var);
 		if (gate_variables.count(var_symbol) > 0)
 		{
@@ -625,7 +624,7 @@ void Parser::Gate_stmt()
 				gate->unresolved_variables.insert(elem);
 			}
 		}
-		else if (global_variables.count(var_symbol) == 0)
+		else if (resolved_variables.count(var_symbol) == 0 && global_variables.count(var_symbol) == 0)
 		{
 			gate->unresolved_variables.insert(var_symbol);
 		}
