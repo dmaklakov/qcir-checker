@@ -3,15 +3,17 @@
 #include <ctime>
 
 #include "Parser.h"
-#include "Scanner.h"
 #include "ParserLight.h"
+#include "Scanner.h"
+
+using namespace std;
 
 int main(int argc, char *argv[])
 {
 
     if (argc < 2)
     {
-        cerr << "Usage: qcir <filename> [-cleansed] [-light]" << endl;
+        cerr << "Usage: qcir [-cleansed] [-light] <filename> " << endl;
         return EXIT_FAILURE;
     }
 
@@ -66,7 +68,8 @@ int main(int argc, char *argv[])
     }
     time_t end = time(0);
 
-    std::cout << "Number of errors: " << parser->errors->count << std::endl;
+    int n_errors = parser->errors->count + scanner->errors_count;
+    std::cout << "Number of errors: " << n_errors << std::endl;
     if (parser->n_variables_expected > 0)
     {
         std::cout << "Number of variables expected: " << parser->n_variables_expected << std::endl;

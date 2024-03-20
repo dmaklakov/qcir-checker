@@ -124,22 +124,43 @@ void Parser::Qcir_file()
 	}
 	else
 	{
+		correct_cleansed = false;
 		SynErr(3);
 	}
+	while (!(StartOf(1)))
+	{
+		SynErr(248);
+		Get();
+	}
 	Qblock_stmt();
-	if (StartOf(1))
+	while (!(StartOf(2)))
+	{
+		SynErr(249);
+		Get();
+	}
+	if (StartOf(3))
 	{
 		Output_stmt();
 	}
 	else
 	{
-		output_gate = L"undefined";
-		SynErr(38);
+		correct_cleansed = false;
+		Err(L"output gate definition is missing");
+	}
+	while (!(la->kind == _EOF || la->kind == _ident || la->kind == _number_ident))
+	{
+		SynErr(250);
+		Get();
 	}
 	while (la->kind == _ident || la->kind == _number_ident)
 	{
 		Gate_stmt();
 		nl();
+		while (!(StartOf(4)))
+		{
+			SynErr(251);
+			Get();
+		}
 		while (la->kind == 246 /* "\n" */)
 		{
 			nl();
@@ -172,7 +193,7 @@ void Parser::Qcir_file()
 					{
 						if (pair.second == unresolved_variable)
 						{
-							SemErr(pair.first, L" was unresolved");
+							SemErr(pair.first, L"was unresolved");
 							break;
 						}
 					}
@@ -207,6 +228,16 @@ void Parser::Format_id()
 			correct_cleansed = false;
 		}
 	}
+	else if (la->kind == _ident)
+	{
+		Get();
+		if (check_for_cleansed)
+		{
+			SemErr(L"Number of variables is not defined");
+			n_variables_expected = -1;
+			correct_cleansed = false;
+		}
+	}
 	else if (check_for_cleansed)
 	{
 		SemErr(L"Number of variables is not defined");
@@ -223,12 +254,7 @@ void Parser::Format_id()
 
 void Parser::Qblock_stmt()
 {
-	while (!(StartOf(2)))
-	{
-		SynErr(248);
-		Get();
-	}
-	if (StartOf(3))
+	if (StartOf(5))
 	{
 		Free();
 		Expect(4 /* "(" */);
@@ -270,7 +296,7 @@ void Parser::Qblock_stmt()
 			nl();
 		}
 	}
-	while (StartOf(4))
+	while (StartOf(6))
 	{
 		Qblock_quant();
 	}
@@ -278,11 +304,6 @@ void Parser::Qblock_stmt()
 
 void Parser::Output_stmt()
 {
-	while (!(StartOf(5)))
-	{
-		SynErr(249);
-		Get();
-	}
 	Output();
 	Expect(4 /* "(" */);
 	Lit();
@@ -298,11 +319,6 @@ void Parser::Output_stmt()
 
 void Parser::Gate_stmt()
 {
-	while (!(la->kind == _EOF || la->kind == _ident || la->kind == _number_ident))
-	{
-		SynErr(250);
-		Get();
-	}
 	Var();
 	Gate *gate = new Gate();
 	const wchar_t *name = wcsdup(t->val);
@@ -316,7 +332,7 @@ void Parser::Gate_stmt()
 	wchar_t *var;
 	size_t var_symbol;
 	Expect(7 /* "=" */);
-	if (StartOf(6))
+	if (StartOf(7))
 	{
 		Ngate_type();
 		Expect(4 /* "(" */);
@@ -351,7 +367,6 @@ void Parser::Gate_stmt()
 			{
 				gate->unresolved_variables.insert(var_symbol);
 			}
-
 			while (la->kind == 5 /* "," */)
 			{
 				Get();
@@ -388,7 +403,7 @@ void Parser::Gate_stmt()
 		}
 		Expect(6 /* ")" */);
 	}
-	else if (StartOf(7))
+	else if (StartOf(8))
 	{
 		if (check_for_cleansed)
 		{
@@ -400,7 +415,6 @@ void Parser::Gate_stmt()
 			Warning(L"xor gate is used");
 		}
 		Xor();
-
 		Expect(4 /* "(" */);
 		Lit();
 		var = wcsdup(t->val);
@@ -464,7 +478,7 @@ void Parser::Gate_stmt()
 		}
 		Expect(6 /* ")" */);
 	}
-	else if (StartOf(8))
+	else if (StartOf(9))
 	{
 		if (check_for_cleansed)
 		{
@@ -476,7 +490,6 @@ void Parser::Gate_stmt()
 			Warning(L"ite gate is used");
 		}
 		Ite();
-
 		Expect(4 /* "(" */);
 		Lit();
 		var = wcsdup(t->val);
@@ -507,6 +520,7 @@ void Parser::Gate_stmt()
 		{
 			gate->unresolved_variables.insert(var_symbol);
 		}
+
 		Expect(5 /* "," */);
 		Lit();
 		var = wcsdup(t->val);
@@ -537,6 +551,7 @@ void Parser::Gate_stmt()
 		{
 			gate->unresolved_variables.insert(var_symbol);
 		}
+
 		Expect(5 /* "," */);
 		Lit();
 		var = wcsdup(t->val);
@@ -567,12 +582,14 @@ void Parser::Gate_stmt()
 		{
 			gate->unresolved_variables.insert(var_symbol);
 		}
+
 		Expect(6 /* ")" */);
 	}
-	else if (StartOf(4))
+	else if (StartOf(6))
 	{
 		Quant();
 		gate->type = EXIST_QUANTIFIERS;
+
 		Expect(4 /* "(" */);
 		Var();
 		var = wcsdup(t->val);
@@ -588,6 +605,7 @@ void Parser::Gate_stmt()
 			correct_cleansed = false;
 		}
 		resolved_variables.insert(var_symbol);
+
 		while (la->kind == 5 /* "," */)
 		{
 			Get();
@@ -631,7 +649,7 @@ void Parser::Gate_stmt()
 		Expect(6 /* ")" */);
 	}
 	else
-		SynErr(251);
+		SynErr(252);
 
 	gate_variables[name_symbol] = *gate;
 }
@@ -657,7 +675,7 @@ void Parser::Free()
 		}
 	}
 	else
-		SynErr(252);
+		SynErr(253);
 }
 
 void Parser::Var()
@@ -671,7 +689,7 @@ void Parser::Var()
 		Get();
 	}
 	else
-		SynErr(253);
+		SynErr(254);
 
 	if (check_for_cleansed)
 	{
@@ -695,11 +713,6 @@ void Parser::Var()
 
 void Parser::Qblock_quant()
 {
-	while (!(StartOf(9)))
-	{
-		SynErr(254);
-		Get();
-	}
 	Quant();
 	Expect(4 /* "(" */);
 	Var();
@@ -714,7 +727,6 @@ void Parser::Qblock_quant()
 		}
 	}
 	global_variables.insert(var_symbol);
-
 	while (la->kind == 5 /* "," */)
 	{
 		Get();
@@ -731,9 +743,14 @@ void Parser::Qblock_quant()
 		}
 		global_variables.insert(var_symbol);
 	}
-
 	Expect(6 /* ")" */);
+
 	nl();
+	while (!(StartOf(10)))
+	{
+		SynErr(255);
+		Get();
+	}
 	while (la->kind == 246 /* "\n" */)
 	{
 		nl();
@@ -742,16 +759,16 @@ void Parser::Qblock_quant()
 
 void Parser::Quant()
 {
-	if (StartOf(10))
+	if (StartOf(11))
 	{
 		Exists();
 	}
-	else if (StartOf(11))
+	else if (StartOf(12))
 	{
 		Forall();
 	}
 	else
-		SynErr(255);
+		SynErr(256);
 }
 
 void Parser::Output()
@@ -770,7 +787,7 @@ void Parser::Output()
 		}
 	}
 	else
-		SynErr(256);
+		SynErr(257);
 }
 
 void Parser::Lit()
@@ -785,21 +802,21 @@ void Parser::Lit()
 		Var();
 	}
 	else
-		SynErr(257);
+		SynErr(258);
 }
 
 void Parser::Ngate_type()
 {
-	if (StartOf(12))
+	if (StartOf(13))
 	{
 		And();
 	}
-	else if (StartOf(13))
+	else if (StartOf(14))
 	{
 		Or();
 	}
 	else
-		SynErr(258);
+		SynErr(259);
 }
 
 void Parser::Xor()
@@ -818,7 +835,7 @@ void Parser::Xor()
 		}
 	}
 	else
-		SynErr(259);
+		SynErr(260);
 }
 
 void Parser::Ite()
@@ -837,7 +854,7 @@ void Parser::Ite()
 		}
 	}
 	else
-		SynErr(260);
+		SynErr(261);
 }
 
 void Parser::Exists()
@@ -856,7 +873,7 @@ void Parser::Exists()
 		}
 	}
 	else
-		SynErr(261);
+		SynErr(262);
 }
 
 void Parser::Forall()
@@ -875,7 +892,7 @@ void Parser::Forall()
 		}
 	}
 	else
-		SynErr(262);
+		SynErr(263);
 }
 
 void Parser::And()
@@ -894,17 +911,16 @@ void Parser::And()
 		}
 	}
 	else
-		SynErr(263);
+		SynErr(264);
 }
 
 void Parser::Or()
 {
-
 	if (la->kind == 34 /* "or" */)
 	{
 		Get();
 	}
-	else if (la->kind >= 35 && la->kind >= 37)
+	else if (la->kind >= 35 && la->kind <= 37)
 	{
 		Get();
 		if (check_for_cleansed)
@@ -914,7 +930,7 @@ void Parser::Or()
 		}
 	}
 	else
-		SynErr(264);
+		SynErr(265);
 }
 
 bool Parser::isAllDigits(const wchar_t *arr) const
@@ -1073,12 +1089,14 @@ Parser::Parser(Scanner *scanner, bool check_for_cleansed)
 	maxT = 247;
 
 	ParserInitCaller<Parser>::CallInit(this);
-	dummyToken = nullptr;
-	t = la = nullptr;
+	dummyToken = NULL;
+	t = la = NULL;
 	minErrDist = 2;
 	errDist = minErrDist;
 	this->scanner = scanner;
 	this->check_for_cleansed = check_for_cleansed;
+	this->output_gate = L"undefined";
+	this->output_gate_defined = false;
 	this->symbols = ankerl::unordered_dense::map<const wchar_t *, size_t, WCharPtrHash, WCharPtrEqual>();
 	this->symbols_size = 0;
 	this->gate_variables = ankerl::unordered_dense::map<size_t, Gate>();
@@ -1092,17 +1110,18 @@ bool Parser::StartOf(int s) const
 	const bool T = true;
 	const bool x = false;
 
-	static bool set[14][249] = {
+	static bool set[15][249] = {
+		{T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x},
 		{T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x},
+		{T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x},
 		{x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x},
-		{T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x},
+		{T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, x, x},
 		{x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x},
 		{x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x},
-		{T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x},
 		{x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x},
 		{x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x},
 		{x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x},
-		{T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x},
+		{T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x},
 		{x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x},
 		{x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, x, x, x},
 		{x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, T, T, T, T, T, T, T, T, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x},
@@ -1293,7 +1312,7 @@ void Errors::SynErr(int line, int col, int n)
 	case 115:
 	case 116:
 	case 117:
-		s = coco_string_create(L"\"free\" expected");
+		s = coco_string_create(L"\"FREE\" expected");
 		break;
 	case 118:
 	case 119:
@@ -1443,45 +1462,48 @@ void Errors::SynErr(int line, int col, int n)
 		s = coco_string_create(L"this symbol not expected in Gate_stmt");
 		break;
 	case 251:
-		s = coco_string_create(L"invalid Gate_stmt");
+		s = coco_string_create(L"this symbol not expected in Qcir_file");
 		break;
 	case 252:
-		s = coco_string_create(L"invalid Free");
+		s = coco_string_create(L"invalid Gate_stmt");
 		break;
 	case 253:
-		s = coco_string_create(L"invalid Var");
+		s = coco_string_create(L"invalid Free");
 		break;
 	case 254:
-		s = coco_string_create(L"this symbol not expected in Qblock_quant");
+		s = coco_string_create(L"invalid Var");
 		break;
 	case 255:
-		s = coco_string_create(L"invalid Quant");
+		s = coco_string_create(L"this symbol not expected in Qblock_quant");
 		break;
 	case 256:
-		s = coco_string_create(L"invalid Output");
+		s = coco_string_create(L"invalid Quant");
 		break;
 	case 257:
-		s = coco_string_create(L"invalid Lit");
+		s = coco_string_create(L"invalid Output");
 		break;
 	case 258:
-		s = coco_string_create(L"invalid Ngate_type");
+		s = coco_string_create(L"invalid Lit");
 		break;
 	case 259:
-		s = coco_string_create(L"invalid Xor");
+		s = coco_string_create(L"invalid Ngate_type");
 		break;
 	case 260:
-		s = coco_string_create(L"invalid Ite");
+		s = coco_string_create(L"invalid Xor");
 		break;
 	case 261:
-		s = coco_string_create(L"invalid Exists");
+		s = coco_string_create(L"invalid Ite");
 		break;
 	case 262:
-		s = coco_string_create(L"invalid Forall");
+		s = coco_string_create(L"invalid Exists");
 		break;
 	case 263:
-		s = coco_string_create(L"invalid And");
+		s = coco_string_create(L"invalid Forall");
 		break;
 	case 264:
+		s = coco_string_create(L"invalid And");
+		break;
+	case 265:
 		s = coco_string_create(L"invalid Or");
 		break;
 
@@ -1493,7 +1515,7 @@ void Errors::SynErr(int line, int col, int n)
 	}
 	break;
 	}
-	wprintf(L"-- line %d col %d: %ls\n", line, col, s);
+	std::wcout << L"-- line " << line << L" col " << col << L": " << s << std::endl;
 	coco_string_delete(s);
 	count++;
 }

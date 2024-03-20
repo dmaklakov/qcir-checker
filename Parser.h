@@ -3,6 +3,9 @@
 
 #include <ankerl/unordered_dense.h>
 
+#include <unordered_set>
+#include <unordered_map>
+
 #include "Scanner.h"
 
 using namespace std;
@@ -42,6 +45,7 @@ class Gate
 {
 public:
 	ankerl::unordered_dense::set<size_t> unresolved_variables;
+
 	Gate_type type;
 
 	Gate();

@@ -124,6 +124,7 @@ void Parser::Qcir_file()
 	}
 	else
 	{
+		correct_cleansed = false;
 		SynErr(3);
 	}
 	while (!(StartOf(1)))
@@ -139,6 +140,7 @@ void Parser::Qcir_file()
 	}
 	if (StartOf(3))
 	{
+		correct_cleansed = false;
 		Output_stmt();
 	}
 	else
