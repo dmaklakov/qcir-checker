@@ -11,23 +11,23 @@ TOKENS
   ident  = ( letter | '_' ) { ( letter | digit | '_' ) } .
   number_ident = digit {digit | letter | '_' } .
 
+COMMENTS FROM "#" TO cr
+
 IGNORE cr +  tab
-
-
 
 PRODUCTIONS
 /*------------------------------------------------------------------------*/
 Qcir_file =
-	[Format_id] SYNC Qblock_stmt SYNC [Output_stmt] SYNC { SYNC Gate_stmt nl { nl }} .
+	[ Format_id ] SYNC Qblock_stmt SYNC [Output_stmt] SYNC { Gate_stmt nl SYNC { nl } } .
 	
 Format_id =
 	/* { nl } */ "#QCIR-G14" [number_ident] nl { nl } .
 
 Qblock_stmt =
-	[ Free '(' Var { ',' Var } ')' nl { nl } ] SYNC { SYNC Qblock_quant } . 
+	[ Free '(' Var { ',' Var } ')' nl { nl } ] { Qblock_quant } . 
 	
 Qblock_quant =
-	Quant '(' Var { ',' Var } ')' nl { nl }.
+	Quant '(' Var { ',' Var } ')' nl SYNC { nl }.
 
 Output_stmt =
 	Output '(' Lit ')' nl { nl }.
