@@ -189,11 +189,11 @@ void Parser::Qcir_file()
 			{
 				for (const auto unresolved_variable : output.unresolved_variables)
 				{
-					for (const auto pair : symbols)
+					for (const auto &pair : symbols)
 					{
 						if (pair.second == unresolved_variable)
 						{
-							SemErr(pair.first, L"was unresolved");
+							SemErr(pair.first.data(), L"was unresolved");
 							break;
 						}
 					}
@@ -1097,7 +1097,7 @@ Parser::Parser(Scanner *scanner, bool check_for_cleansed)
 	this->check_for_cleansed = check_for_cleansed;
 	this->output_gate = L"undefined";
 	this->output_gate_defined = false;
-	this->symbols = ankerl::unordered_dense::map<const wchar_t *, size_t, WCharPtrHash, WCharPtrEqual>();
+	this->symbols = ankerl::unordered_dense::map<std::basic_string_view<wchar_t>, size_t>();
 	this->symbols_size = 0;
 	this->gate_variables = ankerl::unordered_dense::map<size_t, Gate>();
 	this->global_variables = ankerl::unordered_dense::set<size_t>();

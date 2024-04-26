@@ -3,36 +3,9 @@
 
 #include <ankerl/unordered_dense.h>
 
-#include <unordered_set>
-#include <unordered_map>
-
 #include "Scanner.h"
 
 using namespace std;
-
-// Custom hash function for wchar_t*
-struct WCharPtrHash
-{
-	size_t operator()(const wchar_t *str) const
-	{
-		// Use a simple hash function for illustration
-		size_t hash = 0;
-		while (*str)
-		{
-			hash = (hash * 31) + (*str++);
-		}
-		return hash;
-	}
-};
-
-// Custom equality function for wchar_t*
-struct WCharPtrEqual
-{
-	bool operator()(const wchar_t *a, const wchar_t *b) const
-	{
-		return wcscmp(a, b) == 0;
-	}
-};
 
 enum Gate_type
 {
@@ -103,7 +76,7 @@ public:
 
 	bool check_for_cleansed = false;
 	bool correct_cleansed = true;
-	ankerl::unordered_dense::map<const wchar_t *, size_t, WCharPtrHash, WCharPtrEqual> symbols;
+	ankerl::unordered_dense::map<std::basic_string_view<wchar_t>, size_t> symbols;
 
 	ankerl::unordered_dense::set<size_t> global_variables;
 	ankerl::unordered_dense::map<size_t, Gate> gate_variables;

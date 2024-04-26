@@ -55,11 +55,11 @@ void ParserLight::Qcir_file_mod()
 			{
 				for (const auto unresolved_variable : unresolved_variables)
 				{
-					for (const auto pair : symbols)
+					for (const auto& pair : symbols)
 					{
 						if (pair.second == unresolved_variable)
 						{
-							SemErr(pair.first, L" was unresolved");
+							SemErr(pair.first.data(), L" was unresolved");
 							break;
 						}
 					}
