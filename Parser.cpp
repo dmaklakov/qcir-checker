@@ -948,15 +948,15 @@ bool Parser::isAllDigits(const wchar_t *arr) const
 
 size_t Parser::getSymbol(const wchar_t *str)
 {
-	if (this->symbols.count(str) == 0)
-	{
+	const auto it = this->symbols.find(str);
+	if (it == this->symbols.end()) {
 		size_t symbol = this->symbols_size++;
 		symbols[str] = symbol;
 		return symbol;
 	}
 	else
 	{
-		return symbols[str];
+		return it->second;
 	}
 }
 
