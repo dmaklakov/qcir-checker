@@ -20,7 +20,7 @@ void ParserLight::Qcir_file_mod()
 	}
 	else
 	{
-		output_gate = L"undefined";
+		output_gate = "undefined";
 		SynErr(38);
 	}
 
@@ -41,12 +41,12 @@ void ParserLight::Qcir_file_mod()
 		size_t output_gate_symbol = getSymbol(output_gate);
 		if (global_variables.count(output_gate_symbol) > 0)
 		{
-			SemErr(output_gate, L"is not a gate variable");
+			SemErr(output_gate, "is not a gate variable");
 			correct_cleansed = false;
 		}
 		else if (gate_variables_set.count(output_gate_symbol) == 0)
 		{
-			SemErr(output_gate, L"output gate was not defined");
+			SemErr(output_gate, "output gate was not defined");
 			correct_cleansed = false;
 		}
 		else
@@ -59,7 +59,7 @@ void ParserLight::Qcir_file_mod()
 					{
 						if (pair.second == unresolved_variable)
 						{
-							SemErr(pair.first.data(), L" was unresolved");
+							SemErr(pair.first.data(), " was unresolved");
 							break;
 						}
 					}
@@ -79,22 +79,22 @@ void ParserLight::Gate_stmt()
 	}
 
 	Var();
-	const wchar_t *name = wcsdup(t->val);
+	const char *name = strdup(t->val);
 	size_t name_symbol = getSymbol(name);
 	if (global_variables.count(name_symbol) > 0 || gate_variables_set.count(name_symbol) > 0)
 	{
-		SemErr(name, L"was already defined");
+		SemErr(name, "was already defined");
 		correct_cleansed = false;
 	}
 
 	if (unresolved_variables.count(name_symbol) > 0)
 	{
-		SemErr(name, L"was used before defined");
+		SemErr(name, "was used before defined");
 		unresolved_variables.erase(name_symbol);
 		correct_cleansed = false;
 	}
 
-	wchar_t *var;
+	char *var;
 	size_t var_symbol;
 	Expect(7 /* "=" */);
 	if (StartOf(5))
@@ -104,7 +104,7 @@ void ParserLight::Gate_stmt()
 		if (la->kind == _ident || la->kind == _number_ident || la->kind == 9 /* "-" */)
 		{
 			Lit();
-			var = wcsdup(t->val);
+			var = strdup(t->val);
 			var_symbol = getSymbol(var);
 			if (global_variables.count(var_symbol) == 0 && gate_variables_set.count(var_symbol) == 0)
 			{
@@ -114,7 +114,7 @@ void ParserLight::Gate_stmt()
 			{
 				Get();
 				Lit();
-				var = wcsdup(t->val);
+				var = strdup(t->val);
 				var_symbol = getSymbol(var);
 				if (global_variables.count(var_symbol) == 0 && gate_variables_set.count(var_symbol) == 0)
 				{
@@ -128,18 +128,18 @@ void ParserLight::Gate_stmt()
 	{
 		if (check_for_cleansed)
 		{
-			SemErr(L"xor gate is not allowed in cleansed form");
+			SemErr("xor gate is not allowed in cleansed form");
 			correct_cleansed = false;
 		}
 		else
 		{
-			Warning(L"xor gate is used");
+			Warning("xor gate is used");
 		}
 		Xor();
 
 		Expect(4 /* "(" */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (global_variables.count(var_symbol) == 0 && gate_variables_set.count(var_symbol) == 0)
 		{
@@ -148,7 +148,7 @@ void ParserLight::Gate_stmt()
 
 		Expect(5 /* "," */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (global_variables.count(var_symbol) == 0 && gate_variables_set.count(var_symbol) == 0)
 		{
@@ -160,18 +160,18 @@ void ParserLight::Gate_stmt()
 	{
 		if (check_for_cleansed)
 		{
-			SemErr(L"ite gate is not allowed in cleansed form");
+			SemErr("ite gate is not allowed in cleansed form");
 			correct_cleansed = false;
 		}
 		else
 		{
-			Warning(L"ite gate is used");
+			Warning("ite gate is used");
 		}
 		Ite();
 
 		Expect(4 /* "(" */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (global_variables.count(var_symbol) == 0 && gate_variables_set.count(var_symbol) == 0)
 		{
@@ -179,7 +179,7 @@ void ParserLight::Gate_stmt()
 		}
 		Expect(5 /* "," */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (global_variables.count(var_symbol) == 0 && gate_variables_set.count(var_symbol) == 0)
 		{
@@ -187,7 +187,7 @@ void ParserLight::Gate_stmt()
 		}
 		Expect(5 /* "," */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (global_variables.count(var_symbol) == 0 && gate_variables_set.count(var_symbol) == 0)
 		{
@@ -201,16 +201,16 @@ void ParserLight::Gate_stmt()
 		Expect(4 /* "(" */);
 
 		Var();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (gate_variables_set.count(var_symbol) > 0)
 		{
-			SemErr(t->val, L"was already defined as gate variable");
+			SemErr(t->val, "was already defined as gate variable");
 			correct_cleansed = false;
 		}
 		else if (check_for_cleansed && (global_variables.count(var_symbol) > 0 || resolved_variables.count(var_symbol) > 0))
 		{
-			SemErr(t->val, L"was already quantified/defined");
+			SemErr(t->val, "was already quantified/defined");
 			correct_cleansed = false;
 		}
 		unresolved_variables.erase(var_symbol);
@@ -219,16 +219,16 @@ void ParserLight::Gate_stmt()
 		{
 			Get();
 			Var();
-			var = wcsdup(t->val);
+			var = strdup(t->val);
 			var_symbol = getSymbol(var);
 			if (gate_variables_set.count(var_symbol) > 0)
 			{
-				SemErr(t->val, L"was already defined as gate variable");
+				SemErr(t->val, "was already defined as gate variable");
 				correct_cleansed = false;
 			}
 			else if (check_for_cleansed && (global_variables.count(var_symbol) > 0 || resolved_variables.count(var_symbol) > 0))
 			{
-				SemErr(t->val, L"was already quantified/defined");
+				SemErr(t->val, "was already quantified/defined");
 				correct_cleansed = false;
 			}
 			unresolved_variables.erase(var_symbol);
@@ -236,7 +236,7 @@ void ParserLight::Gate_stmt()
 		}
 		Expect(8 /* ";" */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (global_variables.count(var_symbol) == 0 && gate_variables_set.count(var_symbol) == 0)
 		{

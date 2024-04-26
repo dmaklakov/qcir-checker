@@ -32,12 +32,12 @@ public:
 
 	Errors();
 	void SynErr(int line, int col, int n);
-	void Error(int line, int col, const wchar_t *s);
-	void Error(int line, int col, const wchar_t *s1, const wchar_t *s2);
-	void Warning(int line, int col, const wchar_t *s);
-	void Warning(int line, int col, const wchar_t *s1, const wchar_t *s2);
-	void Warning(const wchar_t *s);
-	void Exception(const wchar_t *s);
+	void Error(int line, int col, const char *s);
+	void Error(int line, int col, const char *s1, const char *s2);
+	void Warning(int line, int col, const char *s);
+	void Warning(int line, int col, const char *s1, const char *s2);
+	void Warning(const char *s);
+	void Exception(const char *s);
 
 }; // Errors
 
@@ -63,8 +63,8 @@ protected:
 	void ExpectWeak(int n, int follow);
 	bool WeakSeparator(int n, int syFol, int repFol);
 
-	bool isAllDigits(const wchar_t *s) const;
-	size_t getSymbol(const wchar_t *s);
+	bool isAllDigits(const char *s) const;
+	size_t getSymbol(const char *s);
 	size_t symbols_size;
 
 public:
@@ -76,7 +76,7 @@ public:
 
 	bool check_for_cleansed = false;
 	bool correct_cleansed = true;
-	ankerl::unordered_dense::map<std::basic_string_view<wchar_t>, size_t> symbols;
+	ankerl::unordered_dense::map<std::string_view, size_t> symbols;
 
 	ankerl::unordered_dense::set<size_t> global_variables;
 	ankerl::unordered_dense::map<size_t, Gate> gate_variables;
@@ -84,17 +84,17 @@ public:
 
 	long n_variables_expected;
 	long n_variables_real;
-	wchar_t *output_gate;
+	char *output_gate;
 	bool output_gate_defined = false;
 
 	Parser(Scanner *scanner, bool check_for_cleansed);
 	~Parser();
-	void Err(const wchar_t *msg);
-	void Err(const wchar_t *msg1, const wchar_t *msg2);
-	void SemErr(const wchar_t *msg);
-	void SemErr(const wchar_t *msg1, const wchar_t *msg2);
-	void Warning(const wchar_t *msg) const;
-	void Warning(const wchar_t *msg1, const wchar_t *msg2) const;
+	void Err(const char *msg);
+	void Err(const char *msg1, const char *msg2);
+	void SemErr(const char *msg);
+	void SemErr(const char *msg1, const char *msg2);
+	void Warning(const char *msg) const;
+	void Warning(const char *msg1, const char *msg2) const;
 
 	virtual void Qcir_file();
 	void Format_id();

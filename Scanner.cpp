@@ -1,47 +1,26 @@
-
-
 #include <memory.h>
 #include <string.h>
 #include "Scanner.h"
 
 // string handling, wide character
 
-wchar_t *coco_string_create(const wchar_t *value)
-{
-	return coco_string_create(value, 0);
-}
-
-wchar_t *coco_string_create(const wchar_t *value, int startIndex)
-{
-	int valueLen = 0;
-	int len = 0;
-
-	if (value)
-	{
-		valueLen = wcslen(value);
-		len = valueLen - startIndex;
-	}
-
-	return coco_string_create(value, startIndex, len);
-}
-
-wchar_t *coco_string_create(const wchar_t *value, int startIndex, int length)
+char *coco_string_create(const char *value, int startIndex, int length)
 {
 	int len = 0;
-	wchar_t *data;
+	char *data;
 
 	if (value)
 	{
 		len = length;
 	}
-	data = new wchar_t[len + 1];
-	wcsncpy(data, &(value[startIndex]), len);
+	data = new char[len + 1];
+	strncpy(data, &(value[startIndex]), len);
 	data[len] = 0;
 
 	return data;
 }
 
-wchar_t *coco_string_create_upper(const wchar_t *data)
+char *coco_string_create_upper(const char *data)
 {
 	if (!data)
 	{
@@ -51,16 +30,16 @@ wchar_t *coco_string_create_upper(const wchar_t *data)
 	int dataLen = 0;
 	if (data)
 	{
-		dataLen = wcslen(data);
+		dataLen = strlen(data);
 	}
 
-	wchar_t *newData = new wchar_t[dataLen + 1];
+	char *newData = new char[dataLen + 1];
 
 	for (int i = 0; i <= dataLen; i++)
 	{
-		if ((L'a' <= data[i]) && (data[i] <= L'z'))
+		if (('a' <= data[i]) && (data[i] <= 'z'))
 		{
-			newData[i] = data[i] + (L'A' - L'a');
+			newData[i] = data[i] + ('A' - 'a');
 		}
 		else
 		{
@@ -68,69 +47,69 @@ wchar_t *coco_string_create_upper(const wchar_t *data)
 		}
 	}
 
-	newData[dataLen] = L'\0';
+	newData[dataLen] = '\0';
 	return newData;
 }
 
-wchar_t *coco_string_create_lower(const wchar_t *data)
+char *coco_string_create_lower(const char *data)
 {
 	if (!data)
 	{
 		return NULL;
 	}
-	int dataLen = wcslen(data);
+	int dataLen = strlen(data);
 	return coco_string_create_lower(data, 0, dataLen);
 }
 
-wchar_t *coco_string_create_lower(const wchar_t *data, int startIndex, int dataLen)
+char *coco_string_create_lower(const char *data, int startIndex, int dataLen)
 {
 	if (!data)
 	{
 		return NULL;
 	}
 
-	wchar_t *newData = new wchar_t[dataLen + 1];
+	char *newData = new char[dataLen + 1];
 
 	for (int i = 0; i <= dataLen; i++)
 	{
-		wchar_t ch = data[startIndex + i];
-		if ((L'A' <= ch) && (ch <= L'Z'))
+		char ch = data[startIndex + i];
+		if (('A' <= ch) && (ch <= 'Z'))
 		{
-			newData[i] = ch - (L'A' - L'a');
+			newData[i] = ch - ('A' - 'a');
 		}
 		else
 		{
 			newData[i] = ch;
 		}
 	}
-	newData[dataLen] = L'\0';
+	newData[dataLen] = '\0';
 	return newData;
 }
 
-wchar_t *coco_string_create_append(const wchar_t *data1, const wchar_t *data2)
+char *coco_string_create_append(const char *data1, const char *data2)
 {
-	wchar_t *data;
+	char *data;
 	int data1Len = 0;
 	int data2Len = 0;
 
 	if (data1)
 	{
-		data1Len = wcslen(data1);
+		data1Len = strlen(data1);
 	}
 	if (data2)
 	{
-		data2Len = wcslen(data2);
+		data2Len = strlen(data2);
 	}
 
-	data = new wchar_t[data1Len + data2Len + 1];
+	data = new char[data1Len + data2Len + 1];
 
 	if (data1)
 	{
-		wcscpy(data, data1);
+		strcpy(data, data1);
 	}
 	if (data2)
 	{
-		wcscpy(data + data1Len, data2);
+		strcpy(data + data1Len, data2);
 	}
 
 	data[data1Len + data2Len] = 0;
@@ -138,41 +117,35 @@ wchar_t *coco_string_create_append(const wchar_t *data1, const wchar_t *data2)
 	return data;
 }
 
-wchar_t *coco_string_create_append(const wchar_t *target, const wchar_t appendix)
+char *coco_string_create_append(const char *target, const char appendix)
 {
 	int targetLen = coco_string_length(target);
-	wchar_t *data = new wchar_t[targetLen + 2];
-	wcsncpy(data, target, targetLen);
+	char *data = new char[targetLen + 2];
+	strncpy(data, target, targetLen);
 	data[targetLen] = appendix;
 	data[targetLen + 1] = 0;
 	return data;
 }
 
-void coco_string_delete(wchar_t *&data)
-{
-	delete[] data;
-	data = NULL;
-}
-
-int coco_string_length(const wchar_t *data)
+int coco_string_length(const char *data)
 {
 	if (data)
 	{
-		return wcslen(data);
+		return strlen(data);
 	}
 	return 0;
 }
 
-bool coco_string_endswith(const wchar_t *data, const wchar_t *end)
+bool coco_string_endswith(const char *data, const char *end)
 {
-	int dataLen = wcslen(data);
-	int endLen = wcslen(end);
-	return (endLen <= dataLen) && (wcscmp(data + dataLen - endLen, end) == 0);
+	int dataLen = strlen(data);
+	int endLen = strlen(end);
+	return (endLen <= dataLen) && (strcmp(data + dataLen - endLen, end) == 0);
 }
 
-int coco_string_indexof(const wchar_t *data, const wchar_t value)
+int coco_string_indexof(const char *data, const char value)
 {
-	const wchar_t *chr = wcschr(data, value);
+	const char *chr = strchr(data, value);
 
 	if (chr)
 	{
@@ -181,9 +154,9 @@ int coco_string_indexof(const wchar_t *data, const wchar_t value)
 	return -1;
 }
 
-int coco_string_lastindexof(const wchar_t *data, const wchar_t value)
+int coco_string_lastindexof(const char *data, const char value)
 {
-	const wchar_t *chr = wcsrchr(data, value);
+	const char *chr = strchr(data, value);
 
 	if (chr)
 	{
@@ -192,28 +165,28 @@ int coco_string_lastindexof(const wchar_t *data, const wchar_t value)
 	return -1;
 }
 
-void coco_string_merge(wchar_t *&target, const wchar_t *appendix)
+void coco_string_merge(char *&target, const char *appendix)
 {
 	if (!appendix)
 	{
 		return;
 	}
-	wchar_t *data = coco_string_create_append(target, appendix);
+	char *data = coco_string_create_append(target, appendix);
 	delete[] target;
 	target = data;
 }
 
-bool coco_string_equal(const wchar_t *data1, const wchar_t *data2)
+bool coco_string_equal(const char *data1, const char *data2)
 {
-	return wcscmp(data1, data2) == 0;
+	return strcmp(data1, data2) == 0;
 }
 
-int coco_string_compareto(const wchar_t *data1, const wchar_t *data2)
+int coco_string_compareto(const char *data1, const char *data2)
 {
-	return wcscmp(data1, data2);
+	return strcmp(data1, data2);
 }
 
-unsigned int coco_string_hash(const wchar_t *data)
+unsigned int coco_string_hash(const char *data)
 {
 	unsigned int h = 0;
 	if (!data)
@@ -230,23 +203,23 @@ unsigned int coco_string_hash(const wchar_t *data)
 
 // string handling, ascii character
 
-wchar_t *coco_string_create(const char *value)
+char *coco_string_create(const char *value)
 {
 	int len = 0;
 	if (value)
 	{
 		len = strlen(value);
 	}
-	wchar_t *data = new wchar_t[len + 1];
+	char *data = new char[len + 1];
 	for (int i = 0; i < len; ++i)
 	{
-		data[i] = (wchar_t)value[i];
+		data[i] = (char)value[i];
 	}
 	data[len] = 0;
 	return data;
 }
 
-char *coco_string_create_char(const wchar_t *value)
+char *coco_string_create_char(const char *value)
 {
 	int len = coco_string_length(value);
 	char *res = new char[len + 1];
@@ -384,16 +357,16 @@ int Buffer::Peek()
 
 // beg .. begin, zero-based, inclusive, in byte
 // end .. end, zero-based, exclusive, in byte
-wchar_t *Buffer::GetString(int beg, int end)
+char *Buffer::GetString(int beg, int end)
 {
 	int len = 0;
-	wchar_t *buf = new wchar_t[end - beg];
+	char *buf = new char[end - beg];
 	int oldPos = GetPos();
 	SetPos(beg);
 	while (GetPos() < end)
-		buf[len++] = (wchar_t)Read();
+		buf[len++] = (char)Read();
 	SetPos(oldPos);
-	wchar_t *res = coco_string_create(buf, 0, len);
+	char *res = coco_string_create(buf, 0, len);
 	coco_string_delete(buf);
 	return res;
 }
@@ -524,13 +497,13 @@ Scanner::Scanner(const unsigned char *buf, int len)
 	Init();
 }
 
-Scanner::Scanner(const wchar_t *fileName)
+Scanner::Scanner(const char *fileName)
 {
 	FILE *stream;
 	char *chFileName = coco_string_create_char(fileName);
 	if ((stream = fopen(chFileName, "rb")) == NULL)
 	{
-		wprintf(L"--- Cannot open file %ls\n", fileName);
+		printf("--- Cannot open file %s\n", fileName);
 		exit(1);
 	}
 	coco_string_delete(chFileName);
@@ -582,245 +555,245 @@ void Scanner::Init()
 	start.set(45, 17);
 	start.set(10, 18);
 	start.set(Buffer::EoF, -1);
-	keywords.set(L"xor", 10);
-	keywords.set(L"xoR", 11);
-	keywords.set(L"xOr", 12);
-	keywords.set(L"xOR", 13);
-	keywords.set(L"Xor", 14);
-	keywords.set(L"XoR", 15);
-	keywords.set(L"XOr", 16);
-	keywords.set(L"XOR", 17);
-	keywords.set(L"ite", 18);
-	keywords.set(L"itE", 19);
-	keywords.set(L"iTe", 20);
-	keywords.set(L"iTE", 21);
-	keywords.set(L"Ite", 22);
-	keywords.set(L"ItE", 23);
-	keywords.set(L"ITe", 24);
-	keywords.set(L"ITE", 25);
-	keywords.set(L"and", 26);
-	keywords.set(L"anD", 27);
-	keywords.set(L"aNd", 28);
-	keywords.set(L"aND", 29);
-	keywords.set(L"And", 30);
-	keywords.set(L"AnD", 31);
-	keywords.set(L"ANd", 32);
-	keywords.set(L"AND", 33);
-	keywords.set(L"or", 34);
-	keywords.set(L"oR", 35);
-	keywords.set(L"Or", 36);
-	keywords.set(L"OR", 37);
-	keywords.set(L"output", 38);
-	keywords.set(L"outpuT", 39);
-	keywords.set(L"outpUt", 40);
-	keywords.set(L"outpUT", 41);
-	keywords.set(L"outPut", 42);
-	keywords.set(L"outPuT", 43);
-	keywords.set(L"outPUt", 44);
-	keywords.set(L"outPUT", 45);
-	keywords.set(L"ouTput", 46);
-	keywords.set(L"ouTpuT", 47);
-	keywords.set(L"ouTpUt", 48);
-	keywords.set(L"ouTpUT", 49);
-	keywords.set(L"ouTPut", 50);
-	keywords.set(L"ouTPuT", 51);
-	keywords.set(L"ouTPUt", 52);
-	keywords.set(L"ouTPUT", 53);
-	keywords.set(L"oUtput", 54);
-	keywords.set(L"oUtpuT", 55);
-	keywords.set(L"oUtpUt", 56);
-	keywords.set(L"oUtpUT", 57);
-	keywords.set(L"oUtPut", 58);
-	keywords.set(L"oUtPuT", 59);
-	keywords.set(L"oUtPUt", 60);
-	keywords.set(L"oUtPUT", 61);
-	keywords.set(L"oUTput", 62);
-	keywords.set(L"oUTpuT", 63);
-	keywords.set(L"oUTpUt", 64);
-	keywords.set(L"oUTpUT", 65);
-	keywords.set(L"oUTPut", 66);
-	keywords.set(L"oUTPuT", 67);
-	keywords.set(L"oUTPUt", 68);
-	keywords.set(L"oUTPUT", 69);
-	keywords.set(L"Output", 70);
-	keywords.set(L"OutpuT", 71);
-	keywords.set(L"OutpUt", 72);
-	keywords.set(L"OutpUT", 73);
-	keywords.set(L"OutPut", 74);
-	keywords.set(L"OutPuT", 75);
-	keywords.set(L"OutPUt", 76);
-	keywords.set(L"OutPUT", 77);
-	keywords.set(L"OuTput", 78);
-	keywords.set(L"OuTpuT", 79);
-	keywords.set(L"OuTpUt", 80);
-	keywords.set(L"OuTpUT", 81);
-	keywords.set(L"OuTPut", 82);
-	keywords.set(L"OuTPuT", 83);
-	keywords.set(L"OuTPUt", 84);
-	keywords.set(L"OuTPUT", 85);
-	keywords.set(L"OUtput", 86);
-	keywords.set(L"OUtpuT", 87);
-	keywords.set(L"OUtpUt", 88);
-	keywords.set(L"OUtpUT", 89);
-	keywords.set(L"OUtPut", 90);
-	keywords.set(L"OUtPuT", 91);
-	keywords.set(L"OUtPUt", 92);
-	keywords.set(L"OUtPUT", 93);
-	keywords.set(L"OUTput", 94);
-	keywords.set(L"OUTpuT", 95);
-	keywords.set(L"OUTpUt", 96);
-	keywords.set(L"OUTpUT", 97);
-	keywords.set(L"OUTPut", 98);
-	keywords.set(L"OUTPuT", 99);
-	keywords.set(L"OUTPUt", 100);
-	keywords.set(L"OUTPUT", 101);
-	keywords.set(L"free", 102);
-	keywords.set(L"freE", 103);
-	keywords.set(L"frEe", 104);
-	keywords.set(L"frEE", 105);
-	keywords.set(L"fRee", 106);
-	keywords.set(L"fReE", 107);
-	keywords.set(L"fREe", 108);
-	keywords.set(L"fREE", 109);
-	keywords.set(L"Free", 110);
-	keywords.set(L"FreE", 111);
-	keywords.set(L"FrEe", 112);
-	keywords.set(L"FrEE", 113);
-	keywords.set(L"FRee", 114);
-	keywords.set(L"FReE", 115);
-	keywords.set(L"FREe", 116);
-	keywords.set(L"FREE", 117);
-	keywords.set(L"exists", 118);
-	keywords.set(L"existS", 119);
-	keywords.set(L"exisTs", 120);
-	keywords.set(L"exisTS", 121);
-	keywords.set(L"exiSts", 122);
-	keywords.set(L"exiStS", 123);
-	keywords.set(L"exiSTs", 124);
-	keywords.set(L"exiSTS", 125);
-	keywords.set(L"exIsts", 126);
-	keywords.set(L"exIstS", 127);
-	keywords.set(L"exIsTs", 128);
-	keywords.set(L"exIsTS", 129);
-	keywords.set(L"exISts", 130);
-	keywords.set(L"exIStS", 131);
-	keywords.set(L"exISTs", 132);
-	keywords.set(L"exISTS", 133);
-	keywords.set(L"eXists", 134);
-	keywords.set(L"eXistS", 135);
-	keywords.set(L"eXisTs", 136);
-	keywords.set(L"eXisTS", 137);
-	keywords.set(L"eXiSts", 138);
-	keywords.set(L"eXiStS", 139);
-	keywords.set(L"eXiSTs", 140);
-	keywords.set(L"eXiSTS", 141);
-	keywords.set(L"eXIsts", 142);
-	keywords.set(L"eXIstS", 143);
-	keywords.set(L"eXIsTs", 144);
-	keywords.set(L"eXIsTS", 145);
-	keywords.set(L"eXISts", 146);
-	keywords.set(L"eXIStS", 147);
-	keywords.set(L"eXISTs", 148);
-	keywords.set(L"eXISTS", 149);
-	keywords.set(L"Exists", 150);
-	keywords.set(L"ExistS", 151);
-	keywords.set(L"ExisTs", 152);
-	keywords.set(L"ExisTS", 153);
-	keywords.set(L"ExiSts", 154);
-	keywords.set(L"ExiStS", 155);
-	keywords.set(L"ExiSTs", 156);
-	keywords.set(L"ExiSTS", 157);
-	keywords.set(L"ExIsts", 158);
-	keywords.set(L"ExIstS", 159);
-	keywords.set(L"ExIsTs", 160);
-	keywords.set(L"ExIsTS", 161);
-	keywords.set(L"ExISts", 162);
-	keywords.set(L"ExIStS", 163);
-	keywords.set(L"ExISTs", 164);
-	keywords.set(L"ExISTS", 165);
-	keywords.set(L"EXists", 166);
-	keywords.set(L"EXistS", 167);
-	keywords.set(L"EXisTs", 168);
-	keywords.set(L"EXisTS", 169);
-	keywords.set(L"EXiSts", 170);
-	keywords.set(L"EXiStS", 171);
-	keywords.set(L"EXiSTs", 172);
-	keywords.set(L"EXiSTS", 173);
-	keywords.set(L"EXIsts", 174);
-	keywords.set(L"EXIstS", 175);
-	keywords.set(L"EXIsTs", 176);
-	keywords.set(L"EXIsTS", 177);
-	keywords.set(L"EXISts", 178);
-	keywords.set(L"EXIStS", 179);
-	keywords.set(L"EXISTs", 180);
-	keywords.set(L"EXISTS", 181);
-	keywords.set(L"forall", 182);
-	keywords.set(L"foralL", 183);
-	keywords.set(L"foraLl", 184);
-	keywords.set(L"foraLL", 185);
-	keywords.set(L"forAll", 186);
-	keywords.set(L"forAlL", 187);
-	keywords.set(L"forALl", 188);
-	keywords.set(L"forALL", 189);
-	keywords.set(L"foRall", 190);
-	keywords.set(L"foRalL", 191);
-	keywords.set(L"foRaLl", 192);
-	keywords.set(L"foRaLL", 193);
-	keywords.set(L"foRAll", 194);
-	keywords.set(L"foRAlL", 195);
-	keywords.set(L"foRALl", 196);
-	keywords.set(L"foRALL", 197);
-	keywords.set(L"fOrall", 198);
-	keywords.set(L"fOralL", 199);
-	keywords.set(L"fOraLl", 200);
-	keywords.set(L"fOraLL", 201);
-	keywords.set(L"fOrAll", 202);
-	keywords.set(L"fOrAlL", 203);
-	keywords.set(L"fOrALl", 204);
-	keywords.set(L"fOrALL", 205);
-	keywords.set(L"fORall", 206);
-	keywords.set(L"fORalL", 207);
-	keywords.set(L"fORaLl", 208);
-	keywords.set(L"fORaLL", 209);
-	keywords.set(L"fORAll", 210);
-	keywords.set(L"fORAlL", 211);
-	keywords.set(L"fORALl", 212);
-	keywords.set(L"fORALL", 213);
-	keywords.set(L"Forall", 214);
-	keywords.set(L"ForalL", 215);
-	keywords.set(L"ForaLl", 216);
-	keywords.set(L"ForaLL", 217);
-	keywords.set(L"ForAll", 218);
-	keywords.set(L"ForAlL", 219);
-	keywords.set(L"ForALl", 220);
-	keywords.set(L"ForALL", 221);
-	keywords.set(L"FoRall", 222);
-	keywords.set(L"FoRalL", 223);
-	keywords.set(L"FoRaLl", 224);
-	keywords.set(L"FoRaLL", 225);
-	keywords.set(L"FoRAll", 226);
-	keywords.set(L"FoRAlL", 227);
-	keywords.set(L"FoRALl", 228);
-	keywords.set(L"FoRALL", 229);
-	keywords.set(L"FOrall", 230);
-	keywords.set(L"FOralL", 231);
-	keywords.set(L"FOraLl", 232);
-	keywords.set(L"FOraLL", 233);
-	keywords.set(L"FOrAll", 234);
-	keywords.set(L"FOrAlL", 235);
-	keywords.set(L"FOrALl", 236);
-	keywords.set(L"FOrALL", 237);
-	keywords.set(L"FORall", 238);
-	keywords.set(L"FORalL", 239);
-	keywords.set(L"FORaLl", 240);
-	keywords.set(L"FORaLL", 241);
-	keywords.set(L"FORAll", 242);
-	keywords.set(L"FORAlL", 243);
-	keywords.set(L"FORALl", 244);
-	keywords.set(L"FORALL", 245);
+	keywords.set("xor", 10);
+	keywords.set("xoR", 11);
+	keywords.set("xOr", 12);
+	keywords.set("xOR", 13);
+	keywords.set("Xor", 14);
+	keywords.set("XoR", 15);
+	keywords.set("XOr", 16);
+	keywords.set("XOR", 17);
+	keywords.set("ite", 18);
+	keywords.set("itE", 19);
+	keywords.set("iTe", 20);
+	keywords.set("iTE", 21);
+	keywords.set("Ite", 22);
+	keywords.set("ItE", 23);
+	keywords.set("ITe", 24);
+	keywords.set("ITE", 25);
+	keywords.set("and", 26);
+	keywords.set("anD", 27);
+	keywords.set("aNd", 28);
+	keywords.set("aND", 29);
+	keywords.set("And", 30);
+	keywords.set("AnD", 31);
+	keywords.set("ANd", 32);
+	keywords.set("AND", 33);
+	keywords.set("or", 34);
+	keywords.set("oR", 35);
+	keywords.set("Or", 36);
+	keywords.set("OR", 37);
+	keywords.set("output", 38);
+	keywords.set("outpuT", 39);
+	keywords.set("outpUt", 40);
+	keywords.set("outpUT", 41);
+	keywords.set("outPut", 42);
+	keywords.set("outPuT", 43);
+	keywords.set("outPUt", 44);
+	keywords.set("outPUT", 45);
+	keywords.set("ouTput", 46);
+	keywords.set("ouTpuT", 47);
+	keywords.set("ouTpUt", 48);
+	keywords.set("ouTpUT", 49);
+	keywords.set("ouTPut", 50);
+	keywords.set("ouTPuT", 51);
+	keywords.set("ouTPUt", 52);
+	keywords.set("ouTPUT", 53);
+	keywords.set("oUtput", 54);
+	keywords.set("oUtpuT", 55);
+	keywords.set("oUtpUt", 56);
+	keywords.set("oUtpUT", 57);
+	keywords.set("oUtPut", 58);
+	keywords.set("oUtPuT", 59);
+	keywords.set("oUtPUt", 60);
+	keywords.set("oUtPUT", 61);
+	keywords.set("oUTput", 62);
+	keywords.set("oUTpuT", 63);
+	keywords.set("oUTpUt", 64);
+	keywords.set("oUTpUT", 65);
+	keywords.set("oUTPut", 66);
+	keywords.set("oUTPuT", 67);
+	keywords.set("oUTPUt", 68);
+	keywords.set("oUTPUT", 69);
+	keywords.set("Output", 70);
+	keywords.set("OutpuT", 71);
+	keywords.set("OutpUt", 72);
+	keywords.set("OutpUT", 73);
+	keywords.set("OutPut", 74);
+	keywords.set("OutPuT", 75);
+	keywords.set("OutPUt", 76);
+	keywords.set("OutPUT", 77);
+	keywords.set("OuTput", 78);
+	keywords.set("OuTpuT", 79);
+	keywords.set("OuTpUt", 80);
+	keywords.set("OuTpUT", 81);
+	keywords.set("OuTPut", 82);
+	keywords.set("OuTPuT", 83);
+	keywords.set("OuTPUt", 84);
+	keywords.set("OuTPUT", 85);
+	keywords.set("OUtput", 86);
+	keywords.set("OUtpuT", 87);
+	keywords.set("OUtpUt", 88);
+	keywords.set("OUtpUT", 89);
+	keywords.set("OUtPut", 90);
+	keywords.set("OUtPuT", 91);
+	keywords.set("OUtPUt", 92);
+	keywords.set("OUtPUT", 93);
+	keywords.set("OUTput", 94);
+	keywords.set("OUTpuT", 95);
+	keywords.set("OUTpUt", 96);
+	keywords.set("OUTpUT", 97);
+	keywords.set("OUTPut", 98);
+	keywords.set("OUTPuT", 99);
+	keywords.set("OUTPUt", 100);
+	keywords.set("OUTPUT", 101);
+	keywords.set("free", 102);
+	keywords.set("freE", 103);
+	keywords.set("frEe", 104);
+	keywords.set("frEE", 105);
+	keywords.set("fRee", 106);
+	keywords.set("fReE", 107);
+	keywords.set("fREe", 108);
+	keywords.set("fREE", 109);
+	keywords.set("Free", 110);
+	keywords.set("FreE", 111);
+	keywords.set("FrEe", 112);
+	keywords.set("FrEE", 113);
+	keywords.set("FRee", 114);
+	keywords.set("FReE", 115);
+	keywords.set("FREe", 116);
+	keywords.set("FREE", 117);
+	keywords.set("exists", 118);
+	keywords.set("existS", 119);
+	keywords.set("exisTs", 120);
+	keywords.set("exisTS", 121);
+	keywords.set("exiSts", 122);
+	keywords.set("exiStS", 123);
+	keywords.set("exiSTs", 124);
+	keywords.set("exiSTS", 125);
+	keywords.set("exIsts", 126);
+	keywords.set("exIstS", 127);
+	keywords.set("exIsTs", 128);
+	keywords.set("exIsTS", 129);
+	keywords.set("exISts", 130);
+	keywords.set("exIStS", 131);
+	keywords.set("exISTs", 132);
+	keywords.set("exISTS", 133);
+	keywords.set("eXists", 134);
+	keywords.set("eXistS", 135);
+	keywords.set("eXisTs", 136);
+	keywords.set("eXisTS", 137);
+	keywords.set("eXiSts", 138);
+	keywords.set("eXiStS", 139);
+	keywords.set("eXiSTs", 140);
+	keywords.set("eXiSTS", 141);
+	keywords.set("eXIsts", 142);
+	keywords.set("eXIstS", 143);
+	keywords.set("eXIsTs", 144);
+	keywords.set("eXIsTS", 145);
+	keywords.set("eXISts", 146);
+	keywords.set("eXIStS", 147);
+	keywords.set("eXISTs", 148);
+	keywords.set("eXISTS", 149);
+	keywords.set("Exists", 150);
+	keywords.set("ExistS", 151);
+	keywords.set("ExisTs", 152);
+	keywords.set("ExisTS", 153);
+	keywords.set("ExiSts", 154);
+	keywords.set("ExiStS", 155);
+	keywords.set("ExiSTs", 156);
+	keywords.set("ExiSTS", 157);
+	keywords.set("ExIsts", 158);
+	keywords.set("ExIstS", 159);
+	keywords.set("ExIsTs", 160);
+	keywords.set("ExIsTS", 161);
+	keywords.set("ExISts", 162);
+	keywords.set("ExIStS", 163);
+	keywords.set("ExISTs", 164);
+	keywords.set("ExISTS", 165);
+	keywords.set("EXists", 166);
+	keywords.set("EXistS", 167);
+	keywords.set("EXisTs", 168);
+	keywords.set("EXisTS", 169);
+	keywords.set("EXiSts", 170);
+	keywords.set("EXiStS", 171);
+	keywords.set("EXiSTs", 172);
+	keywords.set("EXiSTS", 173);
+	keywords.set("EXIsts", 174);
+	keywords.set("EXIstS", 175);
+	keywords.set("EXIsTs", 176);
+	keywords.set("EXIsTS", 177);
+	keywords.set("EXISts", 178);
+	keywords.set("EXIStS", 179);
+	keywords.set("EXISTs", 180);
+	keywords.set("EXISTS", 181);
+	keywords.set("forall", 182);
+	keywords.set("foralL", 183);
+	keywords.set("foraLl", 184);
+	keywords.set("foraLL", 185);
+	keywords.set("forAll", 186);
+	keywords.set("forAlL", 187);
+	keywords.set("forALl", 188);
+	keywords.set("forALL", 189);
+	keywords.set("foRall", 190);
+	keywords.set("foRalL", 191);
+	keywords.set("foRaLl", 192);
+	keywords.set("foRaLL", 193);
+	keywords.set("foRAll", 194);
+	keywords.set("foRAlL", 195);
+	keywords.set("foRALl", 196);
+	keywords.set("foRALL", 197);
+	keywords.set("fOrall", 198);
+	keywords.set("fOralL", 199);
+	keywords.set("fOraLl", 200);
+	keywords.set("fOraLL", 201);
+	keywords.set("fOrAll", 202);
+	keywords.set("fOrAlL", 203);
+	keywords.set("fOrALl", 204);
+	keywords.set("fOrALL", 205);
+	keywords.set("fORall", 206);
+	keywords.set("fORalL", 207);
+	keywords.set("fORaLl", 208);
+	keywords.set("fORaLL", 209);
+	keywords.set("fORAll", 210);
+	keywords.set("fORAlL", 211);
+	keywords.set("fORALl", 212);
+	keywords.set("fORALL", 213);
+	keywords.set("Forall", 214);
+	keywords.set("ForalL", 215);
+	keywords.set("ForaLl", 216);
+	keywords.set("ForaLL", 217);
+	keywords.set("ForAll", 218);
+	keywords.set("ForAlL", 219);
+	keywords.set("ForALl", 220);
+	keywords.set("ForALL", 221);
+	keywords.set("FoRall", 222);
+	keywords.set("FoRalL", 223);
+	keywords.set("FoRaLl", 224);
+	keywords.set("FoRaLL", 225);
+	keywords.set("FoRAll", 226);
+	keywords.set("FoRAlL", 227);
+	keywords.set("FoRALl", 228);
+	keywords.set("FoRALL", 229);
+	keywords.set("FOrall", 230);
+	keywords.set("FOralL", 231);
+	keywords.set("FOraLl", 232);
+	keywords.set("FOraLL", 233);
+	keywords.set("FOrAll", 234);
+	keywords.set("FOrAlL", 235);
+	keywords.set("FOrALl", 236);
+	keywords.set("FOrALL", 237);
+	keywords.set("FORall", 238);
+	keywords.set("FORalL", 239);
+	keywords.set("FORaLl", 240);
+	keywords.set("FORaLL", 241);
+	keywords.set("FORAll", 242);
+	keywords.set("FORAlL", 243);
+	keywords.set("FORALl", 244);
+	keywords.set("FORALL", 245);
 
 	tvalLength = 128;
-	tval = new wchar_t[tvalLength]; // text of current token
+	tval = new char[tvalLength]; // text of current token
 
 	// COCO_HEAP_BLOCK_SIZE byte heap + pointer to next heap block
 	heap = malloc(COCO_HEAP_BLOCK_SIZE + sizeof(void *));
@@ -830,7 +803,7 @@ void Scanner::Init()
 	heapTop = heap;
 	if (sizeof(Token) > COCO_HEAP_BLOCK_SIZE)
 	{
-		wprintf(L"--- Too small COCO_HEAP_BLOCK_SIZE\n");
+		printf("--- Too small COCO_HEAP_BLOCK_SIZE\n");
 		exit(1);
 	}
 
@@ -848,7 +821,7 @@ void Scanner::Init()
 		int ch2 = ch;
 		if (ch1 != 0xBB || ch2 != 0xBF)
 		{
-			wprintf(L"Illegal byte order mark at start of file");
+			printf("Illegal byte order mark at start of file");
 			exit(1);
 		}
 		Buffer *oldBuf = buffer;
@@ -879,7 +852,7 @@ void Scanner::NextCh()
 		charPos++;
 		// replace isolated '\r' by '\n' in order to make
 		// eol handling uniform across Windows, Unix and Mac
-		if (ch == L'\r' && buffer->Peek() != L'\n')
+		if (ch == '\r' && buffer->Peek() != '\n')
 			ch = EOL;
 		if (ch == EOL)
 		{
@@ -894,8 +867,8 @@ void Scanner::AddCh()
 	if (tlen >= tvalLength)
 	{
 		tvalLength *= 2;
-		wchar_t *newBuf = new wchar_t[tvalLength];
-		memcpy(newBuf, tval, tlen * sizeof(wchar_t));
+		char *newBuf = new char[tvalLength];
+		memcpy(newBuf, tval, tlen * sizeof(char));
 		delete[] tval;
 		tval = newBuf;
 	}
@@ -1006,21 +979,21 @@ Token *Scanner::CreateToken()
 
 void Scanner::AppendVal(Token *t)
 {
-	int reqMem = (tlen + 1) * sizeof(wchar_t);
+	int reqMem = (tlen + 1) * sizeof(char);
 	if (((char *)heapTop + reqMem) >= (char *)heapEnd)
 	{
 		if (reqMem > COCO_HEAP_BLOCK_SIZE)
 		{
-			wprintf(L"--- Too long token value\n");
+			printf("--- Too long token value\n");
 			exit(1);
 		}
 		CreateHeapBlock();
 	}
-	t->val = (wchar_t *)heapTop;
+	t->val = (char *)heapTop;
 	heapTop = (void *)((char *)heapTop + reqMem);
 
-	wcsncpy(t->val, tval, tlen);
-	t->val[tlen] = L'\0';
+	strncpy(t->val, tval, tlen);
+	t->val[tlen] = '\0';
 }
 
 Token *Scanner::NextToken()
@@ -1028,7 +1001,7 @@ Token *Scanner::NextToken()
 	while (ch == ' ' ||
 		   ch == 9 || ch == 13)
 		NextCh();
-	if ((ch == L'#' && Comment0()))
+	if ((ch == '#' && Comment0()))
 		return NextToken();
 	int recKind = noSym;
 	int recEnd = pos;
@@ -1063,7 +1036,7 @@ Token *Scanner::NextToken()
 	case_1:
 		recEnd = pos;
 		recKind = 1;
-		if ((ch >= L'0' && ch <= L'9') || (ch >= L'A' && ch <= L'Z') || ch == L'_' || (ch >= L'a' && ch <= L'z'))
+		if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || ch == '_' || (ch >= 'a' && ch <= 'z'))
 		{
 			AddCh();
 			goto case_1;
@@ -1071,7 +1044,7 @@ Token *Scanner::NextToken()
 		else
 		{
 			t->kind = 1;
-			wchar_t *literal = coco_string_create(tval, 0, tlen);
+			char *literal = coco_string_create(tval, 0, tlen);
 			t->kind = keywords.get(literal, t->kind);
 			coco_string_delete(literal);
 			break;
@@ -1080,7 +1053,7 @@ Token *Scanner::NextToken()
 	case_2:
 		recEnd = pos;
 		recKind = 2;
-		if ((ch >= L'0' && ch <= L'9') || (ch >= L'A' && ch <= L'Z') || ch == L'_' || (ch >= L'a' && ch <= L'z'))
+		if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || ch == '_' || (ch >= 'a' && ch <= 'z'))
 		{
 			AddCh();
 			goto case_2;
@@ -1091,7 +1064,7 @@ Token *Scanner::NextToken()
 			break;
 		}
 	case 3:
-		if (ch == L'Q')
+		if (ch == 'Q')
 		{
 			AddCh();
 			goto case_4;
@@ -1102,7 +1075,7 @@ Token *Scanner::NextToken()
 		}
 	case 4:
 	case_4:
-		if (ch == L'C')
+		if (ch == 'C')
 		{
 			AddCh();
 			goto case_5;
@@ -1113,7 +1086,7 @@ Token *Scanner::NextToken()
 		}
 	case 5:
 	case_5:
-		if (ch == L'I')
+		if (ch == 'I')
 		{
 			AddCh();
 			goto case_6;
@@ -1124,7 +1097,7 @@ Token *Scanner::NextToken()
 		}
 	case 6:
 	case_6:
-		if (ch == L'R')
+		if (ch == 'R')
 		{
 			AddCh();
 			goto case_7;
@@ -1135,7 +1108,7 @@ Token *Scanner::NextToken()
 		}
 	case 7:
 	case_7:
-		if (ch == L'-')
+		if (ch == '-')
 		{
 			AddCh();
 			goto case_8;
@@ -1146,7 +1119,7 @@ Token *Scanner::NextToken()
 		}
 	case 8:
 	case_8:
-		if (ch == L'G')
+		if (ch == 'G')
 		{
 			AddCh();
 			goto case_9;
@@ -1157,7 +1130,7 @@ Token *Scanner::NextToken()
 		}
 	case 9:
 	case_9:
-		if (ch == L'1')
+		if (ch == '1')
 		{
 			AddCh();
 			goto case_10;
@@ -1168,7 +1141,7 @@ Token *Scanner::NextToken()
 		}
 	case 10:
 	case_10:
-		if (ch == L'4')
+		if (ch == '4')
 		{
 			AddCh();
 			goto case_11;

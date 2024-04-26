@@ -11,36 +11,36 @@ void Parser::SynErr(int n)
 	errDist = 0;
 }
 
-void Parser::SemErr(const wchar_t *msg)
+void Parser::SemErr(const char *msg)
 {
 	if (errDist >= minErrDist)
 		errors->Error(t->line, t->col, msg);
 	errDist = 0;
 }
 
-void Parser::SemErr(const wchar_t *msg1, const wchar_t *msg2)
+void Parser::SemErr(const char *msg1, const char *msg2)
 {
 	if (errDist >= minErrDist)
 		errors->Error(t->line, t->col, msg1, msg2);
 	errDist = 0;
 }
 
-void Parser::Warning(const wchar_t *msg) const
+void Parser::Warning(const char *msg) const
 {
 	errors->Warning(t->line, t->col, msg);
 }
 
-void Parser::Warning(const wchar_t *msg1, const wchar_t *msg2) const
+void Parser::Warning(const char *msg1, const char *msg2) const
 {
 	errors->Warning(t->line, t->col, msg1, msg2);
 }
 
-void Parser::Err(const wchar_t *msg)
+void Parser::Err(const char *msg)
 {
 	errors->Error(t->line, t->col, msg);
 }
 
-void Parser::Err(const wchar_t *msg1, const wchar_t *msg2)
+void Parser::Err(const char *msg1, const char *msg2)
 {
 	errors->Error(t->line, t->col, msg1, msg2);
 }
@@ -145,7 +145,7 @@ void Parser::Qcir_file()
 	else
 	{
 		correct_cleansed = false;
-		Err(L"output gate definition is missing");
+		Err("output gate definition is missing");
 	}
 	while (!(la->kind == _EOF || la->kind == _ident || la->kind == _number_ident))
 	{
@@ -174,12 +174,12 @@ void Parser::Qcir_file()
 		const size_t output_gate_symbol = getSymbol(output_gate);
 		if (gate_variables.count(output_gate_symbol) == 0)
 		{
-			SemErr(output_gate, L"output gate was not defined");
+			SemErr(output_gate, "output gate was not defined");
 			correct_cleansed = false;
 		}
 		else if (global_variables.count(output_gate_symbol) > 0)
 		{
-			SemErr(output_gate, L"is not a gate variable");
+			SemErr(output_gate, "is not a gate variable");
 			correct_cleansed = false;
 		}
 		else
@@ -193,7 +193,7 @@ void Parser::Qcir_file()
 					{
 						if (pair.second == unresolved_variable)
 						{
-							SemErr(pair.first.data(), L"was unresolved");
+							SemErr(pair.first.data(), "was unresolved");
 							break;
 						}
 					}
@@ -212,18 +212,18 @@ void Parser::Format_id()
 		Get();
 		if (isAllDigits(t->val))
 		{
-			wchar_t *end;
-			n_variables_expected = wcstol(t->val, &end, 10);
+			char *end;
+			n_variables_expected = strtol(t->val, &end, 10);
 			if (n_variables_expected <= 0)
 			{
-				SemErr(t->val, L"is not a positive number");
+				SemErr(t->val, "is not a positive number");
 				n_variables_expected = -1;
 				correct_cleansed = false;
 			}
 		}
 		else
 		{
-			SemErr(t->val, L"is not a positive number");
+			SemErr(t->val, "is not a positive number");
 			n_variables_expected = -1;
 			correct_cleansed = false;
 		}
@@ -233,14 +233,14 @@ void Parser::Format_id()
 		Get();
 		if (check_for_cleansed)
 		{
-			SemErr(L"Number of variables is not defined");
+			SemErr("Number of variables is not defined");
 			n_variables_expected = -1;
 			correct_cleansed = false;
 		}
 	}
 	else if (check_for_cleansed)
 	{
-		SemErr(L"Number of variables is not defined");
+		SemErr("Number of variables is not defined");
 		n_variables_expected = -1;
 		correct_cleansed = false;
 	}
@@ -259,16 +259,16 @@ void Parser::Qblock_stmt()
 		Free();
 		Expect(4 /* "(" */);
 		Var();
-		wchar_t *var = wcsdup(t->val);
+		char *var = strdup(t->val);
 		size_t var_symbol = getSymbol(var);
-		Warning(var, L"is a free variable");
+		Warning(var, "is a free variable");
 		if (global_variables.count(var_symbol) == 0)
 		{
 			global_variables.insert(var_symbol);
 		}
 		else if (check_for_cleansed)
 		{
-			SemErr(t->val, L"was already defined");
+			SemErr(t->val, "was already defined");
 			correct_cleansed = false;
 		}
 
@@ -276,16 +276,16 @@ void Parser::Qblock_stmt()
 		{
 			Get();
 			Var();
-			var = wcsdup(t->val);
+			var = strdup(t->val);
 			size_t var_symbol = getSymbol(var);
-			Warning(var, L"is a free variable");
+			Warning(var, "is a free variable");
 			if (global_variables.count(var_symbol) == 0)
 			{
 				global_variables.insert(var_symbol);
 			}
 			else if (check_for_cleansed)
 			{
-				SemErr(t->val, L"was already defined");
+				SemErr(t->val, "was already defined");
 				correct_cleansed = false;
 			}
 		}
@@ -307,7 +307,7 @@ void Parser::Output_stmt()
 	Output();
 	Expect(4 /* "(" */);
 	Lit();
-	output_gate = wcsdup(t->val);
+	output_gate = strdup(t->val);
 	output_gate_defined = true;
 	Expect(6 /* ")" */);
 	nl();
@@ -321,15 +321,15 @@ void Parser::Gate_stmt()
 {
 	Var();
 	Gate *gate = new Gate();
-	const wchar_t *name = wcsdup(t->val);
+	const char *name = strdup(t->val);
 	size_t name_symbol = getSymbol(name);
 	if (global_variables.count(name_symbol) > 0 || gate_variables.count(name_symbol) > 0 || resolved_variables.count(name_symbol) > 0)
 	{
-		SemErr(name, L"was already defined");
+		SemErr(name, "was already defined");
 		correct_cleansed = false;
 	}
 
-	wchar_t *var;
+	char *var;
 	size_t var_symbol;
 	Expect(7 /* "=" */);
 	if (StartOf(7))
@@ -339,7 +339,7 @@ void Parser::Gate_stmt()
 		if (la->kind == _ident || la->kind == _number_ident || la->kind == 9 /* "-" */)
 		{
 			Lit();
-			var = wcsdup(t->val);
+			var = strdup(t->val);
 			var_symbol = getSymbol(var);
 			if (gate_variables.count(var_symbol) > 0)
 			{
@@ -357,7 +357,7 @@ void Parser::Gate_stmt()
 				{
 					if (check_for_cleansed)
 					{
-						SemErr(var, L"was already used");
+						SemErr(var, "was already used");
 						correct_cleansed = false;
 					}
 					gate->type = EXIST_QUANTIFIERS;
@@ -371,7 +371,7 @@ void Parser::Gate_stmt()
 			{
 				Get();
 				Lit();
-				var = wcsdup(t->val);
+				var = strdup(t->val);
 				var_symbol = getSymbol(var);
 				if (gate_variables.count(var_symbol) > 0)
 				{
@@ -389,7 +389,7 @@ void Parser::Gate_stmt()
 					{
 						if (check_for_cleansed)
 						{
-							SemErr(var, L"was already used");
+							SemErr(var, "was already used");
 							correct_cleansed = false;
 						}
 						gate->type = EXIST_QUANTIFIERS;
@@ -407,17 +407,17 @@ void Parser::Gate_stmt()
 	{
 		if (check_for_cleansed)
 		{
-			Err(L"xor gate is not allowed in cleansed form");
+			Err("xor gate is not allowed in cleansed form");
 			correct_cleansed = false;
 		}
 		else
 		{
-			Warning(L"xor gate is used");
+			Warning("xor gate is used");
 		}
 		Xor();
 		Expect(4 /* "(" */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (gate_variables.count(var_symbol) > 0)
 		{
@@ -435,7 +435,7 @@ void Parser::Gate_stmt()
 			{
 				if (check_for_cleansed)
 				{
-					SemErr(var, L"was already used");
+					SemErr(var, "was already used");
 					correct_cleansed = false;
 				}
 				gate->type = EXIST_QUANTIFIERS;
@@ -448,7 +448,7 @@ void Parser::Gate_stmt()
 
 		Expect(5 /* "," */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (gate_variables.count(var_symbol) > 0)
 		{
@@ -466,7 +466,7 @@ void Parser::Gate_stmt()
 			{
 				if (check_for_cleansed)
 				{
-					SemErr(var, L"was already used");
+					SemErr(var, "was already used");
 					correct_cleansed = false;
 				}
 				gate->type = EXIST_QUANTIFIERS;
@@ -482,17 +482,17 @@ void Parser::Gate_stmt()
 	{
 		if (check_for_cleansed)
 		{
-			Err(L"ite gate is not allowed in cleansed form");
+			Err("ite gate is not allowed in cleansed form");
 			correct_cleansed = false;
 		}
 		else
 		{
-			Warning(L"ite gate is used");
+			Warning("ite gate is used");
 		}
 		Ite();
 		Expect(4 /* "(" */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (gate_variables.count(var_symbol) > 0)
 		{
@@ -510,7 +510,7 @@ void Parser::Gate_stmt()
 			{
 				if (check_for_cleansed)
 				{
-					SemErr(var, L"was already used");
+					SemErr(var, "was already used");
 					correct_cleansed = false;
 				}
 				gate->type = EXIST_QUANTIFIERS;
@@ -523,7 +523,7 @@ void Parser::Gate_stmt()
 
 		Expect(5 /* "," */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (gate_variables.count(var_symbol) > 0)
 		{
@@ -541,7 +541,7 @@ void Parser::Gate_stmt()
 			{
 				if (check_for_cleansed)
 				{
-					SemErr(var, L"was already used");
+					SemErr(var, "was already used");
 					correct_cleansed = false;
 				}
 				gate->type = EXIST_QUANTIFIERS;
@@ -554,7 +554,7 @@ void Parser::Gate_stmt()
 
 		Expect(5 /* "," */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (gate_variables.count(var_symbol) > 0)
 		{
@@ -572,7 +572,7 @@ void Parser::Gate_stmt()
 			{
 				if (check_for_cleansed)
 				{
-					SemErr(var, L"was already used");
+					SemErr(var, "was already used");
 					correct_cleansed = false;
 				}
 				gate->type = EXIST_QUANTIFIERS;
@@ -592,16 +592,16 @@ void Parser::Gate_stmt()
 
 		Expect(4 /* "(" */);
 		Var();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (gate_variables.count(var_symbol) > 0)
 		{
-			SemErr(var, L"was already defined as gate variable");
+			SemErr(var, "was already defined as gate variable");
 			correct_cleansed = false;
 		}
 		else if (check_for_cleansed && (global_variables.count(var_symbol) > 0 || resolved_variables.count(var_symbol) > 0))
 		{
-			SemErr(var, L"was already defined");
+			SemErr(var, "was already defined");
 			correct_cleansed = false;
 		}
 		resolved_variables.insert(var_symbol);
@@ -610,30 +610,30 @@ void Parser::Gate_stmt()
 		{
 			Get();
 			Var();
-			var = wcsdup(t->val);
+			var = strdup(t->val);
 			var_symbol = getSymbol(var);
 			if (gate_variables.count(var_symbol) > 0)
 			{
-				SemErr(var, L"was already defined as gate variable");
+				SemErr(var, "was already defined as gate variable");
 				correct_cleansed = false;
 			}
 			else if (check_for_cleansed && (resolved_variables.count(var_symbol) > 0 || global_variables.count(var_symbol) > 0))
 			{
-				SemErr(var, L"was already defined");
+				SemErr(var, "was already defined");
 				correct_cleansed = false;
 			}
 			resolved_variables.insert(var_symbol);
 		}
 		Expect(8 /* ";" */);
 		Lit();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (gate_variables.count(var_symbol) > 0)
 		{
 			Gate *gate_var = &gate_variables.at(var_symbol);
 			if (check_for_cleansed && gate_var->type == WAS_USED)
 			{
-				SemErr(var, L"was already used");
+				SemErr(var, "was already used");
 				correct_cleansed = false;
 			}
 			gate_var->type = WAS_USED;
@@ -670,7 +670,7 @@ void Parser::Free()
 		Get();
 		if (check_for_cleansed)
 		{
-			SemErr(L"free keyword is not in lower case");
+			SemErr("free keyword is not in lower case");
 			correct_cleansed = false;
 		}
 	}
@@ -695,16 +695,16 @@ void Parser::Var()
 	{
 		if (!isAllDigits(t->val))
 		{
-			SemErr(t->val, L"is not a correct variable name");
+			SemErr(t->val, "is not a correct variable name");
 			correct_cleansed = false;
 		}
 		else if (n_variables_expected > 0)
 		{
-			wchar_t *end;
-			long number = wcstol(t->val, &end, 10);
+			char *end;
+			long number = strtol(t->val, &end, 10);
 			if (number <= 0 || number > n_variables_expected)
 			{
-				SemErr(t->val, L"is not in the range of variables");
+				SemErr(t->val, "is not in the range of variables");
 				correct_cleansed = false;
 			}
 		}
@@ -716,13 +716,13 @@ void Parser::Qblock_quant()
 	Quant();
 	Expect(4 /* "(" */);
 	Var();
-	wchar_t *var = wcsdup(t->val);
+	char *var = strdup(t->val);
 	size_t var_symbol = getSymbol(var);
 	if (check_for_cleansed)
 	{
 		if (global_variables.count(var_symbol) > 0)
 		{
-			SemErr(t->val, L" was already defined");
+			SemErr(t->val, " was already defined");
 			correct_cleansed = false;
 		}
 	}
@@ -731,13 +731,13 @@ void Parser::Qblock_quant()
 	{
 		Get();
 		Var();
-		var = wcsdup(t->val);
+		var = strdup(t->val);
 		var_symbol = getSymbol(var);
 		if (check_for_cleansed)
 		{
 			if (global_variables.count(var_symbol) > 0)
 			{
-				SemErr(t->val, L" was already defined");
+				SemErr(t->val, " was already defined");
 				correct_cleansed = false;
 			}
 		}
@@ -782,7 +782,7 @@ void Parser::Output()
 		Get();
 		if (check_for_cleansed)
 		{
-			SemErr(L"output keyword is not in lower case");
+			SemErr("output keyword is not in lower case");
 			correct_cleansed = false;
 		}
 	}
@@ -830,7 +830,7 @@ void Parser::Xor()
 		Get();
 		if (check_for_cleansed)
 		{
-			SemErr(L"xor keyword is not in lower case");
+			SemErr("xor keyword is not in lower case");
 			correct_cleansed = false;
 		}
 	}
@@ -849,7 +849,7 @@ void Parser::Ite()
 		Get();
 		if (check_for_cleansed)
 		{
-			SemErr(L"ite keyword is not in lower case");
+			SemErr("ite keyword is not in lower case");
 			correct_cleansed = false;
 		}
 	}
@@ -868,7 +868,7 @@ void Parser::Exists()
 		Get();
 		if (check_for_cleansed)
 		{
-			SemErr(L"exists keyword is not in lower case");
+			SemErr("exists keyword is not in lower case");
 			correct_cleansed = false;
 		}
 	}
@@ -887,7 +887,7 @@ void Parser::Forall()
 		Get();
 		if (check_for_cleansed)
 		{
-			SemErr(L"forall keyword is not in lower case");
+			SemErr("forall keyword is not in lower case");
 			correct_cleansed = false;
 		}
 	}
@@ -906,7 +906,7 @@ void Parser::And()
 		Get();
 		if (check_for_cleansed)
 		{
-			SemErr(L"and keyword is not in lower case");
+			SemErr("and keyword is not in lower case");
 			correct_cleansed = false;
 		}
 	}
@@ -925,7 +925,7 @@ void Parser::Or()
 		Get();
 		if (check_for_cleansed)
 		{
-			SemErr(L"or keyword is not in lower case");
+			SemErr("or keyword is not in lower case");
 			correct_cleansed = false;
 		}
 	}
@@ -933,7 +933,7 @@ void Parser::Or()
 		SynErr(265);
 }
 
-bool Parser::isAllDigits(const wchar_t *arr) const
+bool Parser::isAllDigits(const char *arr) const
 {
 	while (*arr != L'\0')
 	{
@@ -946,12 +946,13 @@ bool Parser::isAllDigits(const wchar_t *arr) const
 	return true;
 }
 
-size_t Parser::getSymbol(const wchar_t *str)
+size_t Parser::getSymbol(const char *str)
 {
-	const auto it = this->symbols.find(str);
+	std::string_view str_view(str);
+	const auto it = this->symbols.find(str_view);
 	if (it == this->symbols.end()) {
 		size_t symbol = this->symbols_size++;
-		symbols[str] = symbol;
+		symbols.emplace(std::pair(str_view, symbol));
 		return symbol;
 	}
 	else
@@ -1078,7 +1079,7 @@ void Parser::Parse()
 {
 	t = NULL;
 	la = dummyToken = new Token();
-	la->val = coco_string_create(L"Dummy Token");
+	la->val = coco_string_create("Dummy Token");
 	Get();
 	Qcir_file();
 	Expect(0);
@@ -1095,9 +1096,9 @@ Parser::Parser(Scanner *scanner, bool check_for_cleansed)
 	errDist = minErrDist;
 	this->scanner = scanner;
 	this->check_for_cleansed = check_for_cleansed;
-	this->output_gate = L"undefined";
+	this->output_gate = "undefined";
 	this->output_gate_defined = false;
-	this->symbols = ankerl::unordered_dense::map<std::basic_string_view<wchar_t>, size_t>();
+	this->symbols = ankerl::unordered_dense::map<std::string_view, size_t>();
 	this->symbols_size = 0;
 	this->gate_variables = ankerl::unordered_dense::map<size_t, Gate>();
 	this->global_variables = ankerl::unordered_dense::set<size_t>();
@@ -1161,38 +1162,38 @@ Errors::Errors()
 
 void Errors::SynErr(int line, int col, int n)
 {
-	wchar_t *s;
+	char *s;
 	switch (n)
 	{
 	case 0:
-		s = coco_string_create(L"EOF expected");
+		s = coco_string_create("EOF expected");
 		break;
 	case 1:
-		s = coco_string_create(L"ident expected");
+		s = coco_string_create("ident expected");
 		break;
 	case 2:
-		s = coco_string_create(L"number_ident expected");
+		s = coco_string_create("number_ident expected");
 		break;
 	case 3:
-		s = coco_string_create(L"\"#QCIR-G14\" expected");
+		s = coco_string_create("\"#QCIR-G14\" expected");
 		break;
 	case 4:
-		s = coco_string_create(L"\"(\" expected");
+		s = coco_string_create("\"(\" expected");
 		break;
 	case 5:
-		s = coco_string_create(L"\",\" expected");
+		s = coco_string_create("\",\" expected");
 		break;
 	case 6:
-		s = coco_string_create(L"\")\" expected");
+		s = coco_string_create("\")\" expected");
 		break;
 	case 7:
-		s = coco_string_create(L"\"=\" expected");
+		s = coco_string_create("\"=\" expected");
 		break;
 	case 8:
-		s = coco_string_create(L"\";\" expected");
+		s = coco_string_create("\";\" expected");
 		break;
 	case 9:
-		s = coco_string_create(L"\"-\" expected");
+		s = coco_string_create("\"-\" expected");
 		break;
 	case 10:
 	case 11:
@@ -1202,7 +1203,7 @@ void Errors::SynErr(int line, int col, int n)
 	case 15:
 	case 16:
 	case 17:
-		s = coco_string_create(L"\"xor\" expected");
+		s = coco_string_create("\"xor\" expected");
 		break;
 	case 18:
 	case 19:
@@ -1212,7 +1213,7 @@ void Errors::SynErr(int line, int col, int n)
 	case 23:
 	case 24:
 	case 25:
-		s = coco_string_create(L"\"ite\" expected");
+		s = coco_string_create("\"ite\" expected");
 		break;
 	case 26:
 	case 27:
@@ -1222,13 +1223,13 @@ void Errors::SynErr(int line, int col, int n)
 	case 31:
 	case 32:
 	case 33:
-		s = coco_string_create(L"\"and\" expected");
+		s = coco_string_create("\"and\" expected");
 		break;
 	case 34:
 	case 35:
 	case 36:
 	case 37:
-		s = coco_string_create(L"\"or\" expected");
+		s = coco_string_create("\"or\" expected");
 		break;
 	case 38:
 	case 39:
@@ -1294,7 +1295,7 @@ void Errors::SynErr(int line, int col, int n)
 	case 99:
 	case 100:
 	case 101:
-		s = coco_string_create(L"\"output\" expected");
+		s = coco_string_create("\"output\" expected");
 		break;
 	case 102:
 	case 103:
@@ -1312,7 +1313,7 @@ void Errors::SynErr(int line, int col, int n)
 	case 115:
 	case 116:
 	case 117:
-		s = coco_string_create(L"\"FREE\" expected");
+		s = coco_string_create("\"FREE\" expected");
 		break;
 	case 118:
 	case 119:
@@ -1378,7 +1379,7 @@ void Errors::SynErr(int line, int col, int n)
 	case 179:
 	case 180:
 	case 181:
-		s = coco_string_create(L"\"exists\" expected");
+		s = coco_string_create("\"exists\" expected");
 		break;
 	case 182:
 	case 183:
@@ -1444,105 +1445,105 @@ void Errors::SynErr(int line, int col, int n)
 	case 243:
 	case 244:
 	case 245:
-		s = coco_string_create(L"\"forall\" expected");
+		s = coco_string_create("\"forall\" expected");
 		break;
 	case 246:
-		s = coco_string_create(L"\"\\n\" expected");
+		s = coco_string_create("\"\\n\" expected");
 		break;
 	case 247:
-		s = coco_string_create(L"??? expected");
+		s = coco_string_create("??? expected");
 		break;
 	case 248:
-		s = coco_string_create(L"this symbol not expected in Qblock_stmt");
+		s = coco_string_create("this symbol not expected in Qblock_stmt");
 		break;
 	case 249:
-		s = coco_string_create(L"this symbol not expected in Output_stmt");
+		s = coco_string_create("this symbol not expected in Output_stmt");
 		break;
 	case 250:
-		s = coco_string_create(L"this symbol not expected in Gate_stmt");
+		s = coco_string_create("this symbol not expected in Gate_stmt");
 		break;
 	case 251:
-		s = coco_string_create(L"this symbol not expected in Qcir_file");
+		s = coco_string_create("this symbol not expected in Qcir_file");
 		break;
 	case 252:
-		s = coco_string_create(L"invalid Gate_stmt");
+		s = coco_string_create("invalid Gate_stmt");
 		break;
 	case 253:
-		s = coco_string_create(L"invalid Free");
+		s = coco_string_create("invalid Free");
 		break;
 	case 254:
-		s = coco_string_create(L"invalid Var");
+		s = coco_string_create("invalid Var");
 		break;
 	case 255:
-		s = coco_string_create(L"this symbol not expected in Qblock_quant");
+		s = coco_string_create("this symbol not expected in Qblock_quant");
 		break;
 	case 256:
-		s = coco_string_create(L"invalid Quant");
+		s = coco_string_create("invalid Quant");
 		break;
 	case 257:
-		s = coco_string_create(L"invalid Output");
+		s = coco_string_create("invalid Output");
 		break;
 	case 258:
-		s = coco_string_create(L"invalid Lit");
+		s = coco_string_create("invalid Lit");
 		break;
 	case 259:
-		s = coco_string_create(L"invalid Ngate_type");
+		s = coco_string_create("invalid Ngate_type");
 		break;
 	case 260:
-		s = coco_string_create(L"invalid Xor");
+		s = coco_string_create("invalid Xor");
 		break;
 	case 261:
-		s = coco_string_create(L"invalid Ite");
+		s = coco_string_create("invalid Ite");
 		break;
 	case 262:
-		s = coco_string_create(L"invalid Exists");
+		s = coco_string_create("invalid Exists");
 		break;
 	case 263:
-		s = coco_string_create(L"invalid Forall");
+		s = coco_string_create("invalid Forall");
 		break;
 	case 264:
-		s = coco_string_create(L"invalid And");
+		s = coco_string_create("invalid And");
 		break;
 	case 265:
-		s = coco_string_create(L"invalid Or");
+		s = coco_string_create("invalid Or");
 		break;
 
 	default:
 	{
-		wchar_t format[20];
-		coco_swprintf(format, 20, L"error %d", n);
+		char format[20];
+		coco_swprintf(format, 20, "error %d", n);
 		s = coco_string_create(format);
 	}
 	break;
 	}
-	std::wcout << L"-- line " << line << L" col " << col << L": " << s << std::endl;
+	std::wcout << "-- line " << line << " col " << col << ": " << s << std::endl;
 	coco_string_delete(s);
 	count++;
 }
 
-void Errors::Error(int line, int col, const wchar_t *s)
+void Errors::Error(int line, int col, const char *s)
 {
-	std::wcout << L"-- Error: line " << line << L" col " << col << L": " << s << std::endl;
+	std::wcout << "-- Error: line " << line << " col " << col << ": " << s << std::endl;
 	count++;
 }
 
-void Errors::Error(int line, int col, const wchar_t *s1, const wchar_t *s2)
+void Errors::Error(int line, int col, const char *s1, const char *s2)
 {
-	std::wcout << L"-- Error: line " << line << L" col " << col << L": " << s1 << L" " << s2 << std::endl;
+	std::wcout << "-- Error: line " << line << " col " << col << ": " << s1 << " " << s2 << std::endl;
 	count++;
 }
 
-void Errors::Warning(int line, int col, const wchar_t *s)
+void Errors::Warning(int line, int col, const char *s)
 {
-	std::wcout << L"-- Warning: line " << line << L" col " << col << L": " << s << std::endl;
+	std::wcout << "-- Warning: line " << line << " col " << col << ": " << s << std::endl;
 }
 
-void Errors::Warning(int line, int col, const wchar_t *s1, const wchar_t *s2)
+void Errors::Warning(int line, int col, const char *s1, const char *s2)
 {
-	std::wcout << L"-- Warning: line " << line << L" col " << col << L": " << s1 << L" " << s2 << std::endl;
+	std::wcout << "-- Warning: line " << line << " col " << col << ": " << s1 << " " << s2 << std::endl;
 }
 
-void Errors::Exception(const wchar_t *s)
+void Errors::Exception(const char *s)
 {
 	std::wcout << s << std::endl;
 	exit(1);

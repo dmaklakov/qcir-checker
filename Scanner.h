@@ -16,45 +16,36 @@
 #include <fcntl.h>
 #endif
 
-#if _MSC_VER >= 1400
-#define coco_swprintf swprintf_s
-#elif _MSC_VER >= 1300
-#define coco_swprintf _snwprintf
-#elif defined __MINGW32__
-#define coco_swprintf _snwprintf
-#else
-// assume every other compiler knows swprintf
-#define coco_swprintf swprintf
-#endif
+#define coco_swprintf snprintf
 
 #define COCO_WCHAR_MAX 65535
 #define COCO_MIN_BUFFER_LENGTH 1024
 #define COCO_MAX_BUFFER_LENGTH (64 * COCO_MIN_BUFFER_LENGTH)
-#define COCO_HEAP_BLOCK_SIZE (64 * 1024)
+#define COCO_HEAP_BLOCK_SIZE (128 * 1024)
 #define COCO_CPP_NAMESPACE_SEPARATOR L':'
 
 // string handling, wide character
-wchar_t *coco_string_create(const wchar_t *value);
-wchar_t *coco_string_create(const wchar_t *value, int startIndex);
-wchar_t *coco_string_create(const wchar_t *value, int startIndex, int length);
-wchar_t *coco_string_create_upper(const wchar_t *data);
-wchar_t *coco_string_create_lower(const wchar_t *data);
-wchar_t *coco_string_create_lower(const wchar_t *data, int startIndex, int dataLen);
-wchar_t *coco_string_create_append(const wchar_t *data1, const wchar_t *data2);
-wchar_t *coco_string_create_append(const wchar_t *data, const wchar_t value);
-void coco_string_delete(wchar_t *&data);
-int coco_string_length(const wchar_t *data);
-bool coco_string_endswith(const wchar_t *data, const wchar_t *value);
-int coco_string_indexof(const wchar_t *data, const wchar_t value);
-int coco_string_lastindexof(const wchar_t *data, const wchar_t value);
-void coco_string_merge(wchar_t *&data, const wchar_t *value);
-bool coco_string_equal(const wchar_t *data1, const wchar_t *data2);
-int coco_string_compareto(const wchar_t *data1, const wchar_t *data2);
-unsigned int coco_string_hash(const wchar_t *data);
+char *coco_string_create(const char *value);
+char *coco_string_create(const char *value, int startIndex);
+char *coco_string_create(const char *value, int startIndex, int length);
+char *coco_string_create_upper(const char *data);
+char *coco_string_create_lower(const char *data);
+char *coco_string_create_lower(const char *data, int startIndex, int dataLen);
+char *coco_string_create_append(const char *data1, const char *data2);
+char *coco_string_create_append(const char *data, const char value);
+void coco_string_delete(char *&data);
+int coco_string_length(const char *data);
+bool coco_string_endswith(const char *data, const char *value);
+int coco_string_indexof(const char *data, const char value);
+int coco_string_lastindexof(const char *data, const char value);
+void coco_string_merge(char *&data, const char *value);
+bool coco_string_equal(const char *data1, const char *data2);
+int coco_string_compareto(const char *data1, const char *data2);
+unsigned int coco_string_hash(const char *data);
 
 // string handling, ascii character
-wchar_t *coco_string_create(const char *value);
-char *coco_string_create_char(const wchar_t *value);
+char *coco_string_create(const char *value);
+char *coco_string_create_char(const char *value);
 void coco_string_delete(char *&data);
 
 class Token
@@ -65,7 +56,7 @@ public:
 	int charPos;  // token position in characters in the source text (starting at 0)
 	int col;	  // token column (starting at 1)
 	int line;	  // token line (starting at 1)
-	wchar_t *val; // token value
+	char *val; // token value
 	Token *next;  // ML 2005-03-11 Peek tokens are kept in linked list
 
 	Token();
@@ -103,7 +94,7 @@ public:
 	virtual void Close();
 	virtual int Read();
 	virtual int Peek();
-	virtual wchar_t *GetString(int beg, int end);
+	virtual char *GetString(int beg, int end);
 	virtual int GetPos();
 	virtual void SetPos(int value);
 };
@@ -183,10 +174,10 @@ private:
 	class Elem
 	{
 	public:
-		wchar_t *key;
+		char *key;
 		int val;
 		Elem *next;
-		Elem(const wchar_t *key, int val)
+		Elem(const char *key, int val)
 		{
 			this->key = coco_string_create(key);
 			this->val = val;
@@ -218,7 +209,7 @@ public:
 		delete[] tab;
 	}
 
-	void set(const wchar_t *key, int val)
+	void set(const char *key, int val)
 	{
 		Elem *e = new Elem(key, val);
 		int k = coco_string_hash(key) % 128;
@@ -226,7 +217,7 @@ public:
 		tab[k] = e;
 	}
 
-	int get(const wchar_t *key, int defaultVal)
+	int get(const char *key, int defaultVal)
 	{
 		Elem *e = tab[coco_string_hash(key) % 128];
 		while (e != NULL && !coco_string_equal(e->key, key))
@@ -252,7 +243,7 @@ private:
 	KeywordMap keywords;
 
 	Token *t;		// current token
-	wchar_t *tval;	// text of current token
+	char *tval;	// text of current token
 	int tvalLength; // length of text of current token
 	int tlen;		// length of current token
 
@@ -283,7 +274,7 @@ public:
 	Buffer *buffer; // scanner buffer
 
 	Scanner(const unsigned char *buf, int len);
-	Scanner(const wchar_t *fileName);
+	Scanner(const char *fileName);
 	Scanner(FILE *s);
 	~Scanner();
 	Token *Scan();

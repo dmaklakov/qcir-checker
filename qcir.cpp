@@ -18,10 +18,7 @@ int main(int argc, char *argv[])
     }
 
     std::cout << "Filename: " << argv[argc - 1] << std::endl;
-    const char *f = argv[argc - 1];
-    size_t len = strlen(f) + 1;
-    wchar_t *filename = new wchar_t[len];
-    mbstowcs(filename, f, len);
+    const char *filename = argv[argc - 1];
 
     bool check_for_cleansed = false;
     bool light_check = false;
